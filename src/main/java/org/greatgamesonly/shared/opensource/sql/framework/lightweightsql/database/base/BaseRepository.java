@@ -212,7 +212,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return connection;
     }
 
-    abstract Map<String, String> getDbConnectionDetails();
+    public abstract Map<String, String> getDbConnectionDetails();
 
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
         try {
