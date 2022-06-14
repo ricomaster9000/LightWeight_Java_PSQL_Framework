@@ -27,13 +27,13 @@ public class LeadRepository extends BaseRepository<Lead> {
     }
 
     public Lead getByConnexId(Long connexId) throws RepositoryException {
-        List<Lead> leads = super.executeGetQuery("SELECT * from accepted_leads WHERE connex_id = ?", connexId);
+        List<Lead> leads = super.executeGetQuery("SELECT * from leads WHERE connex_id = ?", connexId);
         return leads != null && leads.size() > 0 ? leads.get(0) : null;
     }
 
     public List<Lead> getAllAfterCreateDateByStatusRawQuery(java.sql.Timestamp afterThisDate) throws RepositoryException, SQLException {
         List<Lead> result = new ArrayList<>();
-        ResultSet resultSet = super.executeGetQueryRaw("SELECT * from accepted_leads WHERE create_date > '"+afterThisDate.toString()+
+        ResultSet resultSet = super.executeGetQueryRaw("SELECT * from leads WHERE create_date > '"+afterThisDate.toString()+
                 "' ORDER BY create_date DESC;");
         while (resultSet.next()) {
             Lead entityToReturn = new Lead();
