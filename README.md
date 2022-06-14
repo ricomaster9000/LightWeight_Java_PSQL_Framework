@@ -1,4 +1,4 @@
-# LightWeight_Java_PSQL_SQL_Framework
+# LightWeight_Java_PSQL_Framework
 Lightweight Java PSQL&amp;SQL Database interaction framework built to be used effectively on lambdas running on Java
 
 It uses Apache's DB Utils as its core, with more code wrapped around that but it still allows you to go full base and just execute raw queries
