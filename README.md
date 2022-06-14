@@ -5,3 +5,5 @@ It uses Apache's DB Utils as its core, with more code wrapped around that but it
 
 See example package for some examples on how to use this library/small-framework
 (https://github.com/ricomaster9000/LightWeight_Java_PSQL_SQL_Framework/tree/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/example)
+
+add as dependency by using jitpack.io, go to this link [https://jitpack.io/#ricomaster9000/sageOneApiLibrary-GLOBAL/2.1.11](https://jitpack.io/#ricomaster9000/LightWeight_Java_PSQL_SQL_Framework)
