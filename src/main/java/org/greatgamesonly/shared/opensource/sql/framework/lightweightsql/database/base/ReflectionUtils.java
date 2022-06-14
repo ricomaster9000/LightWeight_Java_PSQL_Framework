@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class ReflectionUtils {
 
-    public static Object callReflectionMethod(Object object, String methodName) {
+    protected static Object callReflectionMethod(Object object, String methodName) {
         Object methodResult = null;
         try {
             methodResult = object.getClass().getMethod(methodName).invoke(object);

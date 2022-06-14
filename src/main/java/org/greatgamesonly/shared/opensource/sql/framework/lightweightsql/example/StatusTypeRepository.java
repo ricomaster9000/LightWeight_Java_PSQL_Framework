@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class StatusTypeRepository extends BaseRepository<StatusType> {
     @Override
-    protected Class<StatusType> getDbEntityClass() {
+    public Class<StatusType> getDbEntityClass() {
         return StatusType.class;
     }
 

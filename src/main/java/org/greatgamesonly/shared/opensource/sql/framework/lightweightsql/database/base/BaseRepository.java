@@ -26,7 +26,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private static Connection connection;
 
-    protected abstract Class<E> getDbEntityClass();
+    public abstract Class<E> getDbEntityClass();
+    public abstract Map<String, String> getDbConnectionDetails();
 
     public E getById(Long id) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
@@ -211,8 +212,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
         return connection;
     }
-
-    public abstract Map<String, String> getDbConnectionDetails();
 
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
         try {

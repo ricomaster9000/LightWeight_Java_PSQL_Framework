@@ -15,7 +15,7 @@ public class LeadRepository extends BaseRepository<Lead> {
     public LeadRepository() {}
 
     @Override
-    protected Class<Lead> getDbEntityClass() {
+    public Class<Lead> getDbEntityClass() {
         return Lead.class;
     }
 
