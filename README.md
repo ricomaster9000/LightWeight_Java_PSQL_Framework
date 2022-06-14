@@ -1,5 +1,5 @@
 # LightWeight_Java_PSQL_Framework
-Lightweight Java PSQL Database interaction framework built to be used effectively on lambdas running on Java
+Lightweight Java PSQL Database interaction framework built to be used effectively on lambdas running on Java but can be used for traditional apps as well
 
 For Java 11+ (but could work on Java 7/8 as well)
 
