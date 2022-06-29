@@ -19,12 +19,6 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_DELETE_ENTITY__ERROR = new RepositoryError(RepositoryError.class.getName()+"_00105", "Error when deleting entities",
             500);
-    public static final RepositoryError REPOSITORY_SEARCH_CURRENCY_CONVERSION_ERROR = new RepositoryError(RepositoryError.class.getName()+"_00106", "Error when searching for Currency Conversion in database",
-            500);
-    public static final RepositoryError REPOSITORY_COUNT_TOTAL_COMPANIES_ERROR = new RepositoryError(RepositoryError.class.getName()+"_00107", "Error when counting all Companies in database",
-            500);
-    public static final RepositoryError REPOSITORY_UNABLE_TO_MERGE_ENTITY_TO_UPDATE_WITH_ENTITY_THAT_EXISTS__ERROR = new RepositoryError(RepositoryError.class.getName()+"_00108", "Error merging entity to update with entity that already exists",
-            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);

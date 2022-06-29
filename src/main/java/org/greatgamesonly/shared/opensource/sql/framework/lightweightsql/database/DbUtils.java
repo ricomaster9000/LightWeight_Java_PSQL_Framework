@@ -9,12 +9,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DbUtils {
@@ -47,6 +42,10 @@ public class DbUtils {
 
                 if(!field.isAnnotationPresent(ColumnName.class)) {
                     throw new IntrospectionException("ColumnName annotation not set for db entity field, please set in code");
+                }
+                if(field.isAnnotationPresent(ModifyDateAutoSet.class)) {
+                    dbEntityColumnToFieldToGetter.setModifyDateAutoSet(true);
+                    dbEntityColumnToFieldToGetter.setModifyDateAutoSetTimezone(field.getAnnotation(ModifyDateAutoSet.class).timezone());
                 }
                 dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
 
@@ -130,6 +129,16 @@ public class DbUtils {
         System.arraycopy(b, 0, c, aLen, bLen);
 
         return c;
+    }
+
+    private static Calendar nowCal(String timezone) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone(timezone));
+        return calendar;
+    }
+
+    public static java.sql.Timestamp nowDbTimestamp(String timezone) {
+        return new java.sql.Timestamp(nowCal(timezone).getTimeInMillis());
     }
 
 }

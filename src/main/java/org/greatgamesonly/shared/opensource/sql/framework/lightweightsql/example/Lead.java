@@ -1,10 +1,7 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
 
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.ColumnName;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DBIgnore;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.PrimaryKey;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.TableName;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.*;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
 import java.sql.Timestamp;
@@ -22,6 +19,10 @@ public class Lead extends BaseEntity {
     protected String ucid;
     @ColumnName("create_date")
     protected Timestamp createDate;
+
+    @ColumnName("modify_date")
+    @ModifyDateAutoSet(timezone = "UTC")
+    protected Timestamp modifyDate;
     @ColumnName("status_id")
     protected Long statusId;
     @DBIgnore
@@ -193,5 +194,13 @@ public class Lead extends BaseEntity {
 
     public void setLeadProcessFailedReasonMsg(String leadProcessFailedReasonMsg) {
         this.leadProcessFailedReasonMsg = leadProcessFailedReasonMsg;
+    }
+
+    public Timestamp getModifyDate() {
+        return modifyDate;
+    }
+
+    public void setModifyDate(Timestamp modifyDate) {
+        this.modifyDate = modifyDate;
     }
 }

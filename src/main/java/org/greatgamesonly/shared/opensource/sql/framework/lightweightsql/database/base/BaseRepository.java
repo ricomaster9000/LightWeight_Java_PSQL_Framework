@@ -27,7 +27,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private static Connection connection;
 
     public abstract Class<E> getDbEntityClass();
-    public abstract Map<String, String> getDbConnectionDetails();
+    public Map<String, String> getDbConnectionDetails() {
+        return DbConnectionManager.CONNECTION_DETAILS;
+    }
 
     public E getById(Long id) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
@@ -158,6 +160,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         .filter(dbEntityColumnToFieldToGetter -> dbEntityColumnToFieldToGetter.hasSetter() && !dbEntityColumnToFieldToGetter.isPrimaryKey())
                         .map(dbEntityColumnToFieldToGetter -> {
                             Object getterValue = callReflectionMethod(entityToUpdate, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
+                                getterValue = org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
+                            }
                             return dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(getterValue) : null);
                         })
                         .collect(Collectors.joining(","))
@@ -204,7 +209,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             Map<String, String> dbConnectionDetails = getDbConnectionDetails();
 
             connection = DriverManager.getConnection(
-                    dbConnectionDetails.get("DatabaseName"),
+                    dbConnectionDetails.get("DatabaseUrl"),
                     dbConnectionDetails.get("User"),
                     dbConnectionDetails.get("Password")
             );

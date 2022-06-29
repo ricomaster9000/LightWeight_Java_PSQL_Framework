@@ -8,6 +8,10 @@ public class DbEntityColumnToFieldToGetter {
     private boolean hasSetter;
     private boolean isPrimaryKey;
 
+    private boolean isModifyDateAutoSet;
+
+    private String modifyDateAutoSetTimezone;
+
     public String getDbColumnName() {
         return dbColumnName;
     }
@@ -54,5 +58,21 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setIsPrimaryKey(boolean isPrimaryKey) {
         this.isPrimaryKey = isPrimaryKey;
+    }
+
+    public boolean isModifyDateAutoSet() {
+        return isModifyDateAutoSet;
+    }
+
+    public void setModifyDateAutoSet(boolean modifyDateAutoSet) {
+        isModifyDateAutoSet = modifyDateAutoSet;
+    }
+
+    public String getModifyDateAutoSetTimezone() {
+        return modifyDateAutoSetTimezone;
+    }
+
+    public void setModifyDateAutoSetTimezone(String modifyDateAutoSetTimezone) {
+        this.modifyDateAutoSetTimezone = modifyDateAutoSetTimezone;
     }
 }
