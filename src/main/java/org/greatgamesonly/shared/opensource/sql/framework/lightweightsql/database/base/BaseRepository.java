@@ -36,6 +36,28 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
+    public E getByField(String fieldName, Object fieldValue) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
+                getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
+                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getByFieldOrderByPrimaryKey(String fieldName, Object fieldValue, OrderBy descOrAsc) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
+                getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
+                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue) +
+                descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+    public E getByFieldOrderByField(String fieldName, Object fieldValue, String orderByField, OrderBy descOrAsc) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
+                getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
+                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue) +
+                descOrAsc.getQueryEquivalent(orderByField));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
     protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
         return executeQuery(queryToRun, QueryType.GET, queryParameters);
     }
@@ -253,6 +275,26 @@ public abstract class BaseRepository<E extends BaseEntity> {
         UPDATE,
         DELETE,
         GET
+    }
+
+    public enum OrderBy {
+        DESC("DESC"),
+        ASC("ASC");
+
+        private final String queryBase;
+
+        OrderBy(String queryBase) {
+            this.queryBase = queryBase;
+        }
+        public String getQueryEquivalent(String relevantFieldName) {
+            switch(this) {
+                case DESC:
+                case ASC:
+                    return " ORDER BY " + relevantFieldName + " " + queryBase;
+                default:
+                    return queryBase;
+            }
+        }
     }
 
 }
