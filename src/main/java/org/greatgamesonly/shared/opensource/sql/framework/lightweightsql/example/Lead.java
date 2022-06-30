@@ -12,12 +12,16 @@ public class Lead extends BaseEntity {
     @ColumnName("contact_id")
     protected Long contactId;
     @ColumnName("external_reference_id")
+    @DoNotUpdateInDb
     protected String externalReferenceId;
     @ColumnName("connex_id")
+    @DoNotUpdateInDb
     protected Long connexId;
     @ColumnName("ucid")
+    @DoNotUpdateInDb
     protected String ucid;
     @ColumnName("create_date")
+    @DoNotUpdateInDb
     protected Timestamp createDate;
 
     @ColumnName("modify_date")
@@ -28,6 +32,7 @@ public class Lead extends BaseEntity {
     @DBIgnore
     protected String status;
     @ColumnName("contact_type_id")
+    @DoNotUpdateInDb
     protected Long contactTypeId;
     @ColumnName("first_name")
     protected String firstName;

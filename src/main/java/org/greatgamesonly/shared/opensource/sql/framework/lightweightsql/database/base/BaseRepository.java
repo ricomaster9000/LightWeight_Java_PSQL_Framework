@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.ReflectionUtils.callReflectionMethod;
 
 public abstract class BaseRepository<E extends BaseEntity> {
@@ -39,23 +40,52 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public E getByField(String fieldName, Object fieldValue) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
-                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue));
+                returnPreparedValueForQuery(fieldValue));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
     public E getByFieldOrderByPrimaryKey(String fieldName, Object fieldValue, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
-                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue) +
+                returnPreparedValueForQuery(fieldValue) +
                 descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
     public E getByFieldOrderByField(String fieldName, Object fieldValue, String orderByField, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
-                org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(fieldValue) +
+                returnPreparedValueForQuery(fieldValue) +
                 descOrAsc.getQueryEquivalent(orderByField));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E insertOrUpdate(E entity) throws RepositoryException {
+        E existingEntity = entity.getId() != null ? getById(entity.getId()) : null;
+        if(existingEntity == null) {
+            existingEntity = insertEntities(entity).get(0);
+            //TODO -> insert/update sub entities into db linked to this entity perhaps, would require a type of oneToMany Annotation etc.
+        } else {
+            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
+            try {
+                dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            } catch (IntrospectionException e) {
+                throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR,e);
+            }
+            E finalExistingEntity = existingEntity;
+            dbEntityColumnToFieldToGetters.stream()
+                .filter(dbEntityColumnToFieldToGetter -> dbEntityColumnToFieldToGetter.canBeUpdatedInDb() && !dbEntityColumnToFieldToGetter.isPrimaryKey())
+                .forEach(
+                    dbEntityColumnToFieldToGetter ->
+                    callReflectionMethod(
+                        finalExistingEntity,
+                        dbEntityColumnToFieldToGetter.getSetterMethodName(),
+                        callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())
+                    )
+                );
+            existingEntity = updateEntities(finalExistingEntity).get(0);
+            //TODO -> insert/update sub entities into db linked to this entity perhaps, would require a type of oneToMany Annotation etc.
+        }
+        return existingEntity;
     }
 
     protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
@@ -132,7 +162,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToInsert == null || entitiesToInsert.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToInsert value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
 
             stringBuilder.append(String.format("INSERT INTO %s (", entitiesToInsert[0].getClass().getAnnotation(TableName.class).value()));
             stringBuilder.append(
@@ -149,7 +179,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         .filter(dbEntityColumnToFieldToGetter -> dbEntityColumnToFieldToGetter.hasSetter() && !dbEntityColumnToFieldToGetter.isPrimaryKey())
                         .map(dbEntityColumnToFieldToGetter -> {
                             Object getterValue = callReflectionMethod(entityToInsert, dbEntityColumnToFieldToGetter.getGetterMethodName());
-                            return (getterValue != null) ? org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(getterValue) : null;
+                            return (getterValue != null) ? returnPreparedValueForQuery(getterValue) : null;
                         })
                         .collect(Collectors.joining(","))
                 );
@@ -172,7 +202,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToUpdate == null || entitiesToUpdate.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToUpdate value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
             stringBuilder.append(String.format("UPDATE %s SET ", entitiesToUpdate[0].getClass().getAnnotation(TableName.class).value()));
@@ -183,9 +213,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         .map(dbEntityColumnToFieldToGetter -> {
                             Object getterValue = callReflectionMethod(entityToUpdate, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
-                                getterValue = org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
+                                getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
-                            return dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.returnPreparedValueForQuery(getterValue) : null);
+                            return dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
                         })
                         .collect(Collectors.joining(","))
                 );
@@ -210,7 +240,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToDelete == null || entitiesToDelete.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
             stringBuilder.append(String.format("DELETE * FROM %s WHERE %s IN ( ", entitiesToDelete[0].getClass().getAnnotation(TableName.class).value(), primaryKeyColumnName));
@@ -261,7 +291,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private String getPrimaryKeyDbColumnName(Class<E> dbEntityClass) throws RepositoryException {
         try {
-            return org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getDbEntityColumnToFieldToGetters(dbEntityClass).stream()
+            return getDbEntityColumnToFieldToGetters(dbEntityClass).stream()
                     .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
                     .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
                     .getDbColumnName();

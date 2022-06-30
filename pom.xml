@@ -6,7 +6,7 @@
 	<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 	<artifactId>lightweightsql</artifactId>
 	<url>https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework</url>
-	<version>1.0.4</version>
+	<version>1.0.6</version>
 	<properties>
 		<compiler-plugin.version>3.8.1</compiler-plugin.version>
 		<maven.compiler.parameters>true</maven.compiler.parameters>

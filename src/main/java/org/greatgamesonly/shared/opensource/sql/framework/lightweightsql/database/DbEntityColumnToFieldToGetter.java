@@ -4,13 +4,13 @@ public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
     private String getterMethodName;
+    private String setterMethodName;
     private String primaryKeyName;
     private boolean hasSetter;
     private boolean isPrimaryKey;
-
     private boolean isModifyDateAutoSet;
-
     private String modifyDateAutoSetTimezone;
+    private boolean canBeUpdatedInDb = true;
 
     public String getDbColumnName() {
         return dbColumnName;
@@ -35,7 +35,12 @@ public class DbEntityColumnToFieldToGetter {
     public void setGetterMethodName(String getterMethodName) {
         this.getterMethodName = getterMethodName;
     }
-
+    public String getSetterMethodName() {
+        return setterMethodName;
+    }
+    public void setSetterMethodName(String setterMethodName) {
+        this.setterMethodName = setterMethodName;
+    }
     public String getPrimaryKeyName() {
         return primaryKeyName;
     }
@@ -74,5 +79,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setModifyDateAutoSetTimezone(String modifyDateAutoSetTimezone) {
         this.modifyDateAutoSetTimezone = modifyDateAutoSetTimezone;
+    }
+
+    public boolean canBeUpdatedInDb() {
+        return canBeUpdatedInDb;
+    }
+
+    public void setCanBeUpdatedInDb(boolean canBeUpdatedInDb) {
+        this.canBeUpdatedInDb = canBeUpdatedInDb;
     }
 }

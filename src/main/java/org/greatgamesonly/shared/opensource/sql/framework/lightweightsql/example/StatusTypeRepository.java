@@ -5,7 +5,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import java.util.Map;
 
 
-public class StatusTypeRepository extends BaseRepository<StatusType> {
+class StatusTypeRepository extends BaseRepository<StatusType> {
     @Override
     public Class<StatusType> getDbEntityClass() {
         return StatusType.class;

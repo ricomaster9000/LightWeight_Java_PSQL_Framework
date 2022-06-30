@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class LeadRepository extends BaseRepository<Lead> {
+class LeadRepository extends BaseRepository<Lead> {
 
     public LeadRepository() {}
 
@@ -65,7 +65,14 @@ public class LeadRepository extends BaseRepository<Lead> {
         return result;
     }
 
-    private Lead insertOrUpdate(Lead entity) throws RepositoryException {
+    // The override is not needed, its just to show you this method exists in base repository, it automatically updates entities accordingly
+    // It takes into account the DoNotUpdateInDb and PrimaryKey annotations
+    @Override
+    public Lead insertOrUpdate(Lead entity) throws RepositoryException {
+        return super.insertOrUpdate(entity);
+    }
+
+    public Lead insertOrUpdateCustom(Lead entity) throws RepositoryException {
         Lead lead = entity.getContactId() != null ? getById(entity.getContactId()) : null;
         if(lead == null) {
             lead = insertEntities(entity).get(0);

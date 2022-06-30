@@ -19,6 +19,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_DELETE_ENTITY__ERROR = new RepositoryError(RepositoryError.class.getName()+"_00105", "Error when deleting entities",
             500);
+    public static final RepositoryError REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR = new RepositoryError(RepositoryError.class.getName()+"_00106", "Error when updating an entity with an entity",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);
