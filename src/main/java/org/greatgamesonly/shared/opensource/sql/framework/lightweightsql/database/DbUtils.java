@@ -47,9 +47,15 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setModifyDateAutoSet(true);
                     dbEntityColumnToFieldToGetter.setModifyDateAutoSetTimezone(field.getAnnotation(ModifyDateAutoSet.class).timezone());
                 }
+                if(field.isAnnotationPresent(DoNotUpdateInDb.class)) {
+                    dbEntityColumnToFieldToGetter.setCanBeUpdatedInDb(false);
+                }
                 dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
 
-                dbEntityColumnToFieldToGetter.setHasSetter(setters.contains("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName())));
+                if(setters.contains("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()))) {
+                    dbEntityColumnToFieldToGetter.setHasSetter(true);
+                    dbEntityColumnToFieldToGetter.setSetterMethodName("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()));
+                }
                 dbEntityColumnToFieldToGetter.setGetterMethodName(
                     getters.stream()
                         .filter(getter -> getter.equals("get" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName())))

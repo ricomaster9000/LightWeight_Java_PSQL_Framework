@@ -10,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class LeadQueryHandler extends BaseBeanListHandler<Lead> {
+class LeadQueryHandler extends BaseBeanListHandler<Lead> {
 
     private final StatusTypeRepository statusTypeRepository;
 

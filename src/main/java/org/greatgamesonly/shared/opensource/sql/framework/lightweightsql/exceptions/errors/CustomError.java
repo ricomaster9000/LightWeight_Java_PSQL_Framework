@@ -1,6 +1,6 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors;
 
-public abstract class CustomError {
+abstract class CustomError {
     private String errorCode;
     private String reason;
     private String appendToReason;

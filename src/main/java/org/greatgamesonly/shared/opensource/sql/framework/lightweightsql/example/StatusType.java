@@ -6,7 +6,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
 @TableName("status_type")
-public class StatusType extends BaseEntity {
+class StatusType extends BaseEntity {
 
     @PrimaryKey
     @ColumnName("id")
