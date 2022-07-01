@@ -32,11 +32,11 @@ class LeadRepository extends BaseRepository<Lead> {
     }
 
     public Lead getByPhoneNumber(String phoneNumber) throws RepositoryException {
-        return super.getByField("phone_number", phoneNumber);
+        return super.getByColumnName("phone_number", phoneNumber);
     }
 
     public Lead getByPhoneNumberOldestFirst(String phoneNumber) throws RepositoryException {
-        return super.getByFieldOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
+        return super.getByColumnNameOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
     }
 
     public List<Lead> getAllAfterCreateDateRawQuery(java.sql.Timestamp afterThisDate) throws RepositoryException, SQLException {
@@ -76,6 +76,12 @@ class LeadRepository extends BaseRepository<Lead> {
     @Override
     public void deleteById(Long id) throws RepositoryException {
         super.deleteById(id);
+    }
+
+    // The override is not needed, its just to show you this method exists in base repository
+    @Override
+    public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
+        return super.countByColumn(columnName, columnKey);
     }
 
     public Lead insertOrUpdateCustom(Lead entity) throws RepositoryException {
