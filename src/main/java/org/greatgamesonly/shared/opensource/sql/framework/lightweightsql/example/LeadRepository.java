@@ -41,7 +41,7 @@ class LeadRepository extends BaseRepository<Lead> {
 
     public List<Lead> getAllAfterCreateDateRawQuery(java.sql.Timestamp afterThisDate) throws RepositoryException, SQLException {
         List<Lead> result = new ArrayList<>();
-        ResultSet resultSet = super.executeGetQueryRaw("SELECT * from leads WHERE create_date > '"+afterThisDate.toString()+
+        ResultSet resultSet = super.executeQueryRaw("SELECT * from leads WHERE create_date > '"+afterThisDate.toString()+
                 "' ORDER BY create_date DESC;");
         while (resultSet.next()) {
             Lead entityToReturn = new Lead();
