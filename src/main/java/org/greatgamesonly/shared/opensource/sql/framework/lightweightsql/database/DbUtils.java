@@ -12,6 +12,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
+
 public class DbUtils {
     private static final Map<String, List<DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
 
@@ -26,12 +28,12 @@ public class DbUtils {
                     entityClass.getSuperclass().getSuperclass().equals(BaseEntity.class));
 
             inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(), new ArrayList<>());
-            Field[] fields = getDbClassFields(entityClass);
+            Field[] fields = getClassFields(entityClass, true, List.of(DBIgnore.class));
             Set<String> getters = getGetters(entityClass);
             Set<String> setters = getSetters(entityClass);
 
             if(getSuperClassGettersAndSettersAlso) {
-                fields = concatenate(fields, getDbClassFields(entityClass.getSuperclass()));
+                fields = concatenate(fields, getClassFields(entityClass.getSuperclass(),true,List.of(DBIgnore.class)));
                 getters.addAll(getGetters(entityClass.getSuperclass()));
                 setters.addAll(getSetters(entityClass.getSuperclass()));
             }
@@ -83,58 +85,6 @@ public class DbUtils {
         } else {
             return object.toString();
         }
-    }
-
-    private static Field[] getDbClassFields(Class<?> clazz) {
-        return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> (field.getType().equals(String.class) ||
-                        field.getType().equals(Long.class) ||
-                        field.getType().equals(Integer.class) ||
-                        field.getType().equals(Date.class) ||
-                        field.getType().equals(Boolean.class) ||
-                        field.getType().isPrimitive() ||
-                        field.getType().equals(Timestamp.class) ||
-                        field.getType().isEnum()) &&
-                        !field.isAnnotationPresent(DBIgnore.class)
-                ).toArray(Field[]::new);
-    }
-
-    private static Set<String> getGetters(Class<?> clazz) throws IntrospectionException {
-        return Arrays.stream(Introspector.getBeanInfo(clazz).getPropertyDescriptors())
-                .filter(propertyDescriptor -> propertyDescriptor.getPropertyType().equals(String.class) ||
-                        propertyDescriptor.getPropertyType().equals(Long.class) ||
-                        propertyDescriptor.getPropertyType().equals(Integer.class) ||
-                        propertyDescriptor.getPropertyType().equals(Date.class) ||
-                        propertyDescriptor.getPropertyType().equals(Boolean.class) ||
-                        propertyDescriptor.getPropertyType().isPrimitive() ||
-                        propertyDescriptor.getPropertyType().equals(Timestamp.class) ||
-                        propertyDescriptor.getPropertyType().isEnum()
-                )
-                .map(propertyDescriptor -> propertyDescriptor.getReadMethod().getName())
-                .collect(Collectors.toSet());
-    }
-
-    private static Set<String> getSetters(Class<?> clazz) throws IntrospectionException {
-        return Arrays.stream(Introspector.getBeanInfo(clazz).getPropertyDescriptors())
-                .filter(propertyDescriptor -> propertyDescriptor .getWriteMethod() != null)
-                .map(propertyDescriptor -> propertyDescriptor.getWriteMethod().getName())
-                .collect(Collectors.toSet());
-    }
-
-    private static String capitalizeString(String str) {
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
-    }
-
-    private static <T> T[] concatenate(T[] a, T[] b) {
-        int aLen = a.length;
-        int bLen = b.length;
-
-        @SuppressWarnings("unchecked")
-        T[] c = (T[]) Array.newInstance(a.getClass().getComponentType(), aLen + bLen);
-        System.arraycopy(a, 0, c, 0, aLen);
-        System.arraycopy(b, 0, c, aLen, bLen);
-
-        return c;
     }
 
     private static Calendar nowCal(String timezone) {
