@@ -37,6 +37,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
+    public void deleteById(Long id) throws RepositoryException {
+        List<E> entitiesRetrieved = executeDeleteQuery("DELETE FROM " + getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
+    }
+
     public E getByField(String fieldName, Object fieldValue) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
@@ -243,7 +247,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
-            stringBuilder.append(String.format("DELETE * FROM %s WHERE %s IN ( ", entitiesToDelete[0].getClass().getAnnotation(TableName.class).value(), primaryKeyColumnName));
+            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", entitiesToDelete[0].getClass().getAnnotation(TableName.class).value(), primaryKeyColumnName));
             stringBuilder.append(
                 Arrays.stream(entitiesToDelete)
                 .map(entity -> entity.getId().toString())

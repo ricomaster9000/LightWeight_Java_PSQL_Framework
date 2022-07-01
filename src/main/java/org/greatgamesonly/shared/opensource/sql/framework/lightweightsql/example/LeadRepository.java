@@ -65,11 +65,17 @@ class LeadRepository extends BaseRepository<Lead> {
         return result;
     }
 
-    // The override is not needed, its just to show you this method exists in base repository, it automatically updates entities accordingly
+
     // It takes into account the DoNotUpdateInDb and PrimaryKey annotations
     @Override
     public Lead insertOrUpdate(Lead entity) throws RepositoryException {
         return super.insertOrUpdate(entity);
+    }
+
+    // The override is not needed, its just to show you this method exists in base repository
+    @Override
+    public void deleteById(Long id) throws RepositoryException {
+        super.deleteById(id);
     }
 
     public Lead insertOrUpdateCustom(Lead entity) throws RepositoryException {
