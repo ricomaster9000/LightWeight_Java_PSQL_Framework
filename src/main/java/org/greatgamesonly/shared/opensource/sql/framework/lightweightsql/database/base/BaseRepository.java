@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.greatgamesonly.reflection.utils.ReflectionUtils.callReflectionMethod;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.ReflectionUtils.callReflectionMethod;
 
 public abstract class BaseRepository<E extends BaseEntity> {
 
