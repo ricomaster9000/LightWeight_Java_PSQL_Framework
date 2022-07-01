@@ -2,6 +2,7 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example.Lead;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.TableName;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
@@ -61,6 +62,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 returnPreparedValueForQuery(fieldValue) +
                 descOrAsc.getQueryEquivalent(orderByField));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public Long countByField(String fieldName, Object fieldValue) throws RepositoryException, SQLException {
+        long countTotal;
+        ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
+                getDbEntityClass().getAnnotation(TableName.class).value() + " WHERE " + fieldName + " = " +
+                returnPreparedValueForQuery(fieldValue));
+        countTotal = resultSet.getLong(0);
+        resultSet.close();
+        return countTotal;
     }
 
     public E insertOrUpdate(E entity) throws RepositoryException {
@@ -139,7 +150,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityList;
     }
 
-    protected ResultSet executeGetQueryRaw(String queryToRun) throws RepositoryException {
+    protected ResultSet executeQueryRaw(String queryToRun) throws RepositoryException {
         ResultSet entityList;
         try {
             CallableStatement callStatement = getConnection().prepareCall(queryToRun);
