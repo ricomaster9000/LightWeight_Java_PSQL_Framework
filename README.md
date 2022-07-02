@@ -1,7 +1,7 @@
 # LightWeight_Java_PSQL_Framework
 Lightweight Java PSQL Database interaction framework built to be used effectively on lambdas running on Java but can be used for traditional apps as well
 
-For Java 11+ (but could work on Java 7/8 as well)
+For Java 11+
 
 Dependency size is small (what lambdas need when cold booting), I tried to keep it as small as possible, but further improvements could perhaps still be made
 
