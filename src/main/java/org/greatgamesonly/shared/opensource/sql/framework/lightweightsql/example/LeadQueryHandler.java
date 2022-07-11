@@ -21,16 +21,6 @@ class LeadQueryHandler extends BaseBeanListHandler<Lead> {
 
     @Override
     public List<Lead> handle(ResultSet rs) throws SQLException {
-        List<Lead> leads = super.handle(rs);
-        for(Lead lead : leads) {
-            try {
-                if(lead.getStatusId() != null) {
-                    lead.setStatus(statusTypeRepository.getById(lead.getStatusId()).getName());
-                }
-            } catch (RepositoryException e) {
-                throw new SQLException("Unable to get acceptedLeadMetadata: "+ e.getMessage(), e);
-            }
-        }
-        return leads;
+        return super.handle(rs);
     }
 }
