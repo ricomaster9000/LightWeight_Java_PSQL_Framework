@@ -1,5 +1,6 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
 
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseRepository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 
@@ -9,15 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-
+@Repository(dbEntityClass = Lead.class)
 class LeadRepository extends BaseRepository<Lead> {
 
     public LeadRepository() {}
-
-    @Override
-    public Class<Lead> getDbEntityClass() {
-        return Lead.class;
-    }
 
     @Override
     public Map<String, String> getDbConnectionDetails() {
@@ -88,7 +84,6 @@ class LeadRepository extends BaseRepository<Lead> {
         Lead lead = entity.getContactId() != null ? getById(entity.getContactId()) : null;
         if(lead == null) {
             lead = insertEntities(entity).get(0);
-            //Here you can insert sub entities linked to this entity for example
         } else {
             lead.setStatusId(entity.getStatusId());
             lead.setUcid(entity.getUcid());

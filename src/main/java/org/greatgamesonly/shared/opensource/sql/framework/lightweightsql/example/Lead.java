@@ -5,8 +5,9 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
 import java.sql.Timestamp;
+import java.util.List;
 
-@TableName("lead")
+@Entity(tableName = "lead", repositoryClass = LeadRepository.class)
 public class Lead extends BaseEntity {
     @PrimaryKey
     @ColumnName("contact_id")
@@ -27,10 +28,11 @@ public class Lead extends BaseEntity {
     @ColumnName("modify_date")
     @ModifyDateAutoSet(timezone = "UTC")
     protected Timestamp modifyDate;
-    @ColumnName("status_id")
+
+    @ManyToOneReferenceId(referenceFromColumnName = "status_id", referenceToColumnName = "id", toOneEntityClass = StatusType.class)
     protected Long statusId;
-    @DBIgnore
-    protected String status;
+    @ManyToOne(linkedDbColumnName = "status_id")
+    protected StatusType status;
     @ColumnName("contact_type_id")
     @DoNotUpdateInDb
     protected Long contactTypeId;
@@ -48,6 +50,8 @@ public class Lead extends BaseEntity {
     protected Long productId;
     @ColumnName("processing_id")
     protected String processingId;
+    @OneToMany(referenceToColumnName = "lead_id", toManyEntityClass = LeadQuote.class)
+    protected List<LeadQuote> leadQuotes;
     @DBIgnore
     protected Timestamp leadReceiveDate;
     @DBIgnore
@@ -113,11 +117,11 @@ public class Lead extends BaseEntity {
         this.statusId = statusId;
     }
 
-    public String getStatus() {
+    public StatusType getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(StatusType status) {
         this.status = status;
     }
 
@@ -207,5 +211,13 @@ public class Lead extends BaseEntity {
 
     public void setModifyDate(Timestamp modifyDate) {
         this.modifyDate = modifyDate;
+    }
+
+    public List<LeadQuote> getLeadQuotes() {
+        return leadQuotes;
+    }
+
+    public void setLeadQuotes(List<LeadQuote> leadQuotes) {
+        this.leadQuotes = leadQuotes;
     }
 }

@@ -6,8 +6,8 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import java.util.Map;
 
 
-@Repository(dbEntityClass = StatusType.class)
-class StatusTypeRepository extends BaseRepository<StatusType> {
+@Repository(dbEntityClass = LeadQuote.class)
+class LeadQuoteRepository extends BaseRepository<LeadQuote> {
 
     @Override
     public Map<String, String> getDbConnectionDetails() {

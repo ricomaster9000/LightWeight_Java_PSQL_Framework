@@ -1,5 +1,7 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
+
 public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
@@ -11,6 +13,24 @@ public class DbEntityColumnToFieldToGetter {
     private boolean isModifyDateAutoSet;
     private String modifyDateAutoSetTimezone;
     private boolean canBeUpdatedInDb = true;
+
+    private boolean isForOneToManyRelation = false;
+
+    private boolean isForOneToOneRelation = false;
+
+    private boolean isForManyToOneRelation = false;
+
+    private boolean isForManyToOneReferenceId = false;
+
+    private Class<? extends BaseEntity> linkedClassEntity = null;
+
+    private String referenceFromColumnName;
+
+    private String referenceToColumnName;
+
+    private String referenceToColumnClassFieldGetterMethodName;
+
+    private String linkedDbColumnName;
 
     public String getDbColumnName() {
         return dbColumnName;
@@ -87,5 +107,77 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setCanBeUpdatedInDb(boolean canBeUpdatedInDb) {
         this.canBeUpdatedInDb = canBeUpdatedInDb;
+    }
+
+    public boolean isForOneToManyRelation() {
+        return isForOneToManyRelation;
+    }
+
+    public void setForOneToManyRelation(boolean forOneToManyRelation) {
+        isForOneToManyRelation = forOneToManyRelation;
+    }
+
+    public Class<? extends BaseEntity> getLinkedClassEntity() {
+        return linkedClassEntity;
+    }
+
+    public void setLinkedClassEntity(Class<? extends BaseEntity> linkedClassEntity) {
+        this.linkedClassEntity = linkedClassEntity;
+    }
+
+    public String getReferenceFromColumnName() {
+        return referenceFromColumnName;
+    }
+
+    public void setReferenceFromColumnName(String referenceFromColumnName) {
+        this.referenceFromColumnName = referenceFromColumnName;
+    }
+
+    public String getReferenceToColumnName() {
+        return referenceToColumnName;
+    }
+
+    public void setReferenceToColumnName(String referenceToColumnName) {
+        this.referenceToColumnName = referenceToColumnName;
+    }
+
+    public String getReferenceToColumnClassFieldGetterMethodName() {
+        return referenceToColumnClassFieldGetterMethodName;
+    }
+
+    public void setReferenceToColumnClassFieldGetterMethodName(String referenceToColumnClassFieldGetterMethodName) {
+        this.referenceToColumnClassFieldGetterMethodName = referenceToColumnClassFieldGetterMethodName;
+    }
+
+    public boolean isForOneToOneRelation() {
+        return isForOneToOneRelation;
+    }
+
+    public void setForOneToOneRelation(boolean forOneToOneRelation) {
+        isForOneToOneRelation = forOneToOneRelation;
+    }
+
+    public boolean isForManyToOneRelation() {
+        return isForManyToOneRelation;
+    }
+
+    public void setForManyToOneRelation(boolean forManyToOneRelation) {
+        isForManyToOneRelation = forManyToOneRelation;
+    }
+
+    public boolean isForManyToOneReferenceId() {
+        return isForManyToOneReferenceId;
+    }
+
+    public void setForManyToOneReferenceId(boolean forManyToOneReferenceId) {
+        isForManyToOneReferenceId = forManyToOneReferenceId;
+    }
+
+    public String getLinkedDbColumnName() {
+        return linkedDbColumnName;
+    }
+
+    public void setLinkedDbColumnName(String linkedDbColumnName) {
+        this.linkedDbColumnName = linkedDbColumnName;
     }
 }

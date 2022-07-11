@@ -2,10 +2,10 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exampl
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.ColumnName;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.PrimaryKey;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.TableName;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
-@TableName("status_type")
+@Entity(tableName = "status_type", repositoryClass = StatusTypeRepository.class)
 class StatusType extends BaseEntity {
 
     @PrimaryKey
