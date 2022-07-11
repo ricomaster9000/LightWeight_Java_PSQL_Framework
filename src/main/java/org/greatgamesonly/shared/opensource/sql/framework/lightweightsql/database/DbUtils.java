@@ -88,8 +88,13 @@ public class DbUtils {
                 }
                 dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
 
-                if(!field.isAnnotationPresent(ColumnName.class) && !field.isAnnotationPresent(OneToMany.class) && field.isAnnotationPresent(OneToOne.class) && (dbEntityColumnToFieldToGetter.getDbColumnName() == null || dbEntityColumnToFieldToGetter.getDbColumnName().isBlank())) {
-                    throw new IntrospectionException("ColumnName annotation not set for db entity field, please set in code");
+                if(!field.isAnnotationPresent(ColumnName.class) &&
+                   !field.isAnnotationPresent(OneToMany.class) &&
+                   !field.isAnnotationPresent(OneToOne.class) &&
+                   !field.isAnnotationPresent(ManyToOne.class) &&
+                   !field.isAnnotationPresent(ManyToOneReferenceId.class) &&
+                   (dbEntityColumnToFieldToGetter.getDbColumnName() == null || dbEntityColumnToFieldToGetter.getDbColumnName().isBlank())) {
+                    throw new IntrospectionException("annotation not set for db entity field, please set in code");
                 }
 
                 if(setters.contains("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()))) {
