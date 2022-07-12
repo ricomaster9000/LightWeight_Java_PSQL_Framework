@@ -104,6 +104,21 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
     }
 
+    public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
+        try {
+            long countTotal;
+            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
+                    getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
+                    returnPreparedValueForQuery(columnKey) +
+                    " AND " + columnName2 + " = " + returnPreparedValueForQuery(columnKey2));
+            countTotal = resultSet.getLong(0);
+            resultSet.close();
+            return countTotal;
+        } catch (SQLException e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_COUNT_BY_FIELD__ERROR,e);
+        }
+    }
+
     public E insertOrUpdate(E entity) throws RepositoryException {
         E existingEntity = entity.getId() != null ? getById(entity.getId()) : null;
         if(existingEntity == null) {
