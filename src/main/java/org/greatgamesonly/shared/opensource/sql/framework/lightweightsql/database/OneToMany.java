@@ -15,4 +15,6 @@ public @interface OneToMany {
     public String referenceToColumnName();
 
     public Class<? extends BaseEntity> toManyEntityClass();
+
+    public String addToWherePartInGetQuery() default "";
 }

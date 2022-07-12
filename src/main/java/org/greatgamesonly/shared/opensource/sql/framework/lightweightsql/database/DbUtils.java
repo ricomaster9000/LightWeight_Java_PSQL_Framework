@@ -58,6 +58,7 @@ public class DbUtils {
                         .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
                         .getGetterMethodName()
                     );
+                    dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(field.getAnnotation(OneToMany.class).addToWherePartInGetQuery());
                 }
                 if(field.isAnnotationPresent(OneToOne.class)) {
                     if(!field.getType().isInstance(BaseEntity.class)) {

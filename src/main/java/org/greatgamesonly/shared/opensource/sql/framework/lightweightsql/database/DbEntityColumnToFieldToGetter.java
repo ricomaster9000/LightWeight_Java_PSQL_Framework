@@ -2,6 +2,8 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
+import java.lang.annotation.Annotation;
+
 public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
@@ -31,6 +33,8 @@ public class DbEntityColumnToFieldToGetter {
     private String referenceToColumnClassFieldGetterMethodName;
 
     private String linkedDbColumnName;
+
+    private String additionalQueryToAdd;
 
     public String getDbColumnName() {
         return dbColumnName;
@@ -179,5 +183,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setLinkedDbColumnName(String linkedDbColumnName) {
         this.linkedDbColumnName = linkedDbColumnName;
+    }
+
+    public String getAdditionalQueryToAdd() {
+        return additionalQueryToAdd;
+    }
+
+    public void setAdditionalQueryToAdd(String additionalQueryToAdd) {
+        this.additionalQueryToAdd = additionalQueryToAdd;
     }
 }

@@ -5,6 +5,8 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.PrimaryKey;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
+import java.sql.Timestamp;
+
 @Entity(tableName = "lead_quote", repositoryClass = LeadQuoteRepository.class)
 public class LeadQuote extends BaseEntity {
     @PrimaryKey
@@ -14,6 +16,8 @@ public class LeadQuote extends BaseEntity {
     private Long quoteNo;
     @ColumnName("lead_id")
     private Long leadId;
+    @ColumnName("create_date")
+    private Timestamp createDate;
 
     @Override
     public Long getId() {
@@ -39,5 +43,13 @@ public class LeadQuote extends BaseEntity {
 
     public void setLeadId(Long leadId) {
         this.leadId = leadId;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
     }
 }
