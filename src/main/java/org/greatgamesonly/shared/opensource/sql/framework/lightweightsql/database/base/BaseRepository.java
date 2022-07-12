@@ -8,6 +8,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
 
+import javax.print.DocFlavor;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -53,9 +54,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName) throws RepositoryException {
+        return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null);
+    }
+
+    public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
         return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
-                " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId));
+                " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
+                ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
     public void deleteById(Long id) throws RepositoryException {
@@ -187,33 +193,33 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 entityList = getRunner().query(getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             }
             if(queryType.equals(QueryType.GET)) {
-                // Optimize relation get queries to be quicker - BEGIN
-                HashMap<Long, E> entityHashMap = new HashMap<>();
-                Long minId = 0L;
-                Long maxId = 0L;
-                for (E entity : entityList) {
-                    if (minId == null) {
-                        minId = entity.getId();
-                    }
-                    if (maxId == null) {
-                        maxId = entity.getId();
-                    }
-                    if (entity.getId() < minId) {
-                        minId = entity.getId();
-                    }
-                    if (entity.getId() > maxId) {
-                        maxId = entity.getId();
-                    }
-                    entityHashMap.put(entity.getId(), entity);
-                }
-                // Optimize relation get queries to be quicker - END
                 if (!relationFieldToGetters.isEmpty()) {
+                    // Optimize relation get queries to be quicker - BEGIN
+                    HashMap<Long, E> entityHashMap = new HashMap<>();
+                    Long minId = 0L;
+                    Long maxId = 0L;
+                    for (E entity : entityList) {
+                        if (minId == null) {
+                            minId = entity.getId();
+                        }
+                        if (maxId == null) {
+                            maxId = entity.getId();
+                        }
+                        if (entity.getId() < minId) {
+                            minId = entity.getId();
+                        }
+                        if (entity.getId() > maxId) {
+                            maxId = entity.getId();
+                        }
+                        entityHashMap.put(entity.getId(), entity);
+                    }
+                    // Optimize relation get queries to be quicker - END
                     for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
                         if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             continue; // Handled in the BaseBeanListHandler
                         }
                         BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        List<? extends BaseEntity> oneToOneRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName());
+                        List<? extends BaseEntity> oneToOneRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
                         for (BaseEntity relationEntity : oneToOneRelationEntities) {
                             E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethod(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
                             callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), relationEntity);

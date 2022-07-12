@@ -50,7 +50,7 @@ public class Lead extends BaseEntity {
     protected Long productId;
     @ColumnName("processing_id")
     protected String processingId;
-    @OneToMany(referenceToColumnName = "lead_id", toManyEntityClass = LeadQuote.class)
+    @OneToMany(referenceToColumnName = "lead_id", toManyEntityClass = LeadQuote.class, addToWherePartInGetQuery = "create_date >= now() - INTERVAL '365 DAY'") //do not ever worry about leadQuotes older than one year
     protected List<LeadQuote> leadQuotes;
     @DBIgnore
     protected Timestamp leadReceiveDate;
