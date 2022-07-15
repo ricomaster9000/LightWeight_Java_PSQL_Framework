@@ -1,6 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
-
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
+package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -9,8 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ManyToOne {
+@interface DBIgnore {
     public String key() default "";
-
-    public String linkedDbColumnName();
 }

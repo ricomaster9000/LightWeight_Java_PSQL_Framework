@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors;
+package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.exceptions.errors;
 
 abstract class CustomError {
     private String errorCode;

@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
+package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface DoNotUpdateInDb {
-    public String key() default "";
+@interface ModifyDateAutoSet {
+    String key() default "";
+
+    String timezone() default "UTC";
 }
