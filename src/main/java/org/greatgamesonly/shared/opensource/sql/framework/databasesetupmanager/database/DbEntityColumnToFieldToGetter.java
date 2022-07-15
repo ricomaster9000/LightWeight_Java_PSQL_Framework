@@ -1,10 +1,6 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
+package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database;
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
-
-import java.lang.annotation.Annotation;
-
-public class DbEntityColumnToFieldToGetter {
+class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
     private String getterMethodName;

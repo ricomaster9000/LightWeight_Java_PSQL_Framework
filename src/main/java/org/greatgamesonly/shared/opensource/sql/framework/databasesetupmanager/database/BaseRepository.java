@@ -1,35 +1,27 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
+package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
+import org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.exceptions.DbManagerException;
+import org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.exceptions.errors.DbManagerError;
 
-import javax.print.DocFlavor;
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.CallableStatement;
-import java.sql.DriverManager;
+import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.callReflectionMethod;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
+import static org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database.DbUtils.*;
 
-public abstract class BaseRepository<E extends BaseEntity> {
+abstract class BaseRepository<E extends BaseEntity> {
 
     private static Connection connection;
     private final Class<E> dbEntityClass;
 
-    public BaseRepository() {
+    protected BaseRepository() {
         if(!this.getClass().isAnnotationPresent(Repository.class)) {
             throw new RuntimeException("Repository annotation must be set for repository class");
         }
@@ -40,49 +32,35 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return dbEntityClass;
     }
 
-    public Map<String, String> getDbConnectionDetails() {
-        return DbConnectionManager.CONNECTION_DETAILS;
-    }
+    protected abstract Map<String, String> getDbConnectionDetails();
 
-    public E getById(Long id) throws RepositoryException {
+    protected E getById(Long id) throws DbManagerException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
-    public List<E> getAll() throws RepositoryException {
+    protected List<E> getAll() throws DbManagerException {
         return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName());
     }
 
-    public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName) throws RepositoryException {
-        return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null);
-    }
-
-    public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
+    protected List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws DbManagerException {
         return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
                 " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
                 ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
-    public void deleteById(Long id) throws RepositoryException {
+    public void deleteById(Long id) throws DbManagerException {
         executeDeleteQuery("DELETE FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
     }
 
-    public E getByColumnName(String columnName, Object columnValue) throws RepositoryException {
+    protected E getByColumnName(String columnName, Object columnValue) throws DbManagerException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
-
-    public E getByColumnNameOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
-        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
-                getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
-                returnPreparedValueForQuery(columnValue) +
-                descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
-        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
-    }
-    public E getByColumnNameOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
+    protected E getByColumnNameOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws DbManagerException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
@@ -90,7 +68,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
-    public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
+    protected Long countByColumn(String columnName, Object columnKey) throws DbManagerException {
         try {
             long countTotal;
             ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
@@ -100,11 +78,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
             resultSet.close();
             return countTotal;
         } catch (SQLException e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_COUNT_BY_FIELD__ERROR,e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_COUNT_BY_FIELD__ERROR,e);
         }
     }
 
-    public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
+    protected Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws DbManagerException {
         try {
             long countTotal;
             ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
@@ -115,11 +93,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
             resultSet.close();
             return countTotal;
         } catch (SQLException e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_COUNT_BY_FIELD__ERROR,e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_COUNT_BY_FIELD__ERROR,e);
         }
     }
 
-    public E insertOrUpdate(E entity) throws RepositoryException {
+    protected E insertOrUpdate(E entity) throws DbManagerException {
         E existingEntity = entity.getId() != null ? getById(entity.getId()) : null;
         if(existingEntity == null) {
             existingEntity = insertEntities(entity).get(0);
@@ -128,7 +106,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             try {
                 dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             } catch (IntrospectionException e) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR,e);
+                throw new DbManagerException(DbManagerError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR,e);
             }
             E finalExistingEntity = existingEntity;
 
@@ -141,7 +119,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                                 callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())
                         );
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR, e);
+                        throw new DbManagerException(DbManagerError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR, e);
                     }
                 }
             }
@@ -150,23 +128,23 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return existingEntity;
     }
 
-    protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
+    protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws DbManagerException {
         return executeQuery(queryToRun, QueryType.GET, queryParameters);
     }
 
-    protected List<E> executeInsertQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
+    protected List<E> executeInsertQuery(String queryToRun, Object... queryParameters) throws DbManagerException {
         return executeQuery(queryToRun, QueryType.INSERT, queryParameters);
     }
 
-    protected List<E> executeUpdateQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
+    protected List<E> executeUpdateQuery(String queryToRun, Object... queryParameters) throws DbManagerException {
         return executeQuery(queryToRun, QueryType.INSERT, queryParameters);
     }
 
-    protected void executeDeleteQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
+    protected void executeDeleteQuery(String queryToRun, Object... queryParameters) throws DbManagerException {
         executeQuery(queryToRun, QueryType.DELETE, queryParameters);
     }
 
-    private List<E> executeQuery(String queryToRun, QueryType queryType, Object... queryParameters) throws RepositoryException {
+    private List<E> executeQuery(String queryToRun, QueryType queryType, Object... queryParameters) throws DbManagerException {
         List<E> entityList = new ArrayList<>();
         try {
             List<DbEntityColumnToFieldToGetter> relationFieldToGetters = Stream.concat(getOneToManyRelationFieldToGetters(getDbEntityClass()).stream(), getOneToOneRelationFieldToGetters(getDbEntityClass()).stream()).collect(Collectors.toList());
@@ -177,30 +155,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     entityList = getRunner().insert(getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
                 } else {
                     entityList = getRunner().execute(getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
-                }
-                // let us disable this for now, not too sure yet
-                if(false) {//if(!oneToManyRelationFieldToGetters.isEmpty()) {
-                    for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
-                        BaseRepository<? extends BaseEntity> toManyRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        List<? extends BaseEntity> toManyEntities = new ArrayList<>();
-                        List<? extends BaseEntity> insertEntities;
-                        List<? extends BaseEntity> updateEntities;
-                        for(E entity : entityList) {
-                            toManyEntities.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
-                        }
-                        insertEntities = toManyRepo.insertEntitiesList(toManyEntities.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
-                        updateEntities = toManyRepo.updateEntitiesList(toManyEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
-                        toManyEntities = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
-                        for(E entity : entityList) {
-                            List<BaseEntity> toAdd = new ArrayList<>();
-                            for(BaseEntity toManyEntity : toManyEntities) {
-                                if(callReflectionMethod(toManyEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
-                                    toAdd.add(toManyEntity);
-                                }
-                            }
-                            callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toAdd);
-                        }
-                    }
                 }
             } else if(queryType.equals(QueryType.DELETE)) {
                 getRunner().execute(getConnection(), queryToRun, getQueryResultHandler());
@@ -244,63 +198,50 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
         } catch (SQLException e) {
             if(e.getSQLState().startsWith("23505")) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
+                throw new DbManagerException(DbManagerError.REPOSITORY_INSERT_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
             }
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
-        } catch (RepositoryException e) {
+            throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
+        } catch (DbManagerException e) {
             throw e;
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e.getMessage() + " non sql error", e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR, e.getMessage() + " non sql error", e);
         } finally {
             try {
                 DbUtils.close(getConnection());
             } catch (SQLException e) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e);
+                throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR, e);
             }
         }
         return entityList;
     }
-    public static <T> T callReflectionMethodGeneric(Object object, String methodName, Object... methodParams) throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        Object methodResult = null;
-        if (methodParams != null && methodParams.length != 0) {
-            methodResult = object.getClass().getMethod(methodName).invoke(object, methodParams);
-        } else {
-            methodResult = object.getClass().getMethod(methodName).invoke(object);
-        }
-        return (T) methodResult;
-    }
 
-    protected ResultSet executeQueryRaw(String queryToRun) throws RepositoryException {
+    protected ResultSet executeQueryRaw(String queryToRun) throws DbManagerException {
         ResultSet entityList;
         try {
             CallableStatement callStatement = getConnection().prepareCall(queryToRun);
             entityList = callStatement.executeQuery();
         } catch (SQLException e) {
             System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e.getMessage() + " non sql error", e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR, e.getMessage() + " non sql error", e);
         } finally {
             try {
+                DbUtils.rollback(getConnection());
                 DbUtils.close(getConnection());
             } catch (SQLException e) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e);
+                throw new DbManagerException(DbManagerError.REPOSITORY_GET__ERROR, e);
             }
         }
         return entityList;
     }
 
-    protected final List<E> insertEntitiesList(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
-        List<E> es = insertEntities((E[]) entitiesToInsert.toArray());
-        return es;
-    }
-
     @SafeVarargs
-    public final List<E> insertEntities(E... entitiesToInsert) throws RepositoryException {
+    protected final List<E> insertEntities(E... entitiesToInsert) throws DbManagerException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if(entitiesToInsert == null || entitiesToInsert.length <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToInsert value was passed");
+                throw new DbManagerException(DbManagerError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToInsert value was passed");
             }
             List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
 
@@ -329,7 +270,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             toAppendValues.add((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
+                        throw new DbManagerException(DbManagerError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
                     }
                 }
                 stringBuilder.append(String.join(",",toAppendValues));
@@ -339,22 +280,22 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
             }
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_PREPARE_INSERT__ERROR, e);
         }
         return executeInsertQuery(stringBuilder.toString());
     }
 
-    protected final List<E> updateEntitiesList(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
+    protected final List<E> updateEntitiesList(List<? extends BaseEntity> entitiesToUpdate) throws DbManagerException {
         return updateEntities((E[]) entitiesToUpdate.toArray());
     }
 
     @SafeVarargs
-    public final List<E> updateEntities(E... entitiesToUpdate) throws RepositoryException {
+    protected final List<E> updateEntities(E... entitiesToUpdate) throws DbManagerException {
         List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if(entitiesToUpdate == null || entitiesToUpdate.length <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToUpdate value was passed");
+                throw new DbManagerException(DbManagerError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToUpdate value was passed");
             }
             List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
@@ -378,7 +319,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             toAppendValues.add(dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null));
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                        throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
+                        throw new DbManagerException(DbManagerError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
                     }
                 }
                 stringBuilder.append(String.join(",",toAppendValues));
@@ -390,17 +331,17 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 result = executeUpdateQuery(stringBuilder.toString());
             }
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_UPDATE_ENTITY__ERROR, e);
         }
         return result;
     }
 
     @SafeVarargs
-    public final void deleteEntities(E... entitiesToDelete) throws RepositoryException {
+    protected final void deleteEntities(E... entitiesToDelete) throws DbManagerException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if(entitiesToDelete == null || entitiesToDelete.length <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
+                throw new DbManagerException(DbManagerError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
             List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
@@ -414,7 +355,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             stringBuilder.append(" );");
             executeDeleteQuery(stringBuilder.toString());
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_DELETE_ENTITY__ERROR, e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_DELETE_ENTITY__ERROR, e);
         }
     }
 
@@ -432,11 +373,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return connection;
     }
 
-    protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
+    protected BaseBeanListHandler<E> getQueryResultHandler() throws DbManagerException {
         try {
             return new BaseBeanListHandler<>(getDbEntityClass());
         } catch (IntrospectionException | IOException | InterruptedException e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_CLASS__ERROR, e);
+            throw new DbManagerException(DbManagerError.REPOSITORY_PREPARE_CLASS__ERROR, e);
         }
     }
 
@@ -444,32 +385,32 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return new QueryRunner();
     }
 
-    private String getPrimaryKeyDbColumnName(List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters) throws RepositoryException {
+    private String getPrimaryKeyDbColumnName(List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters) throws DbManagerException {
         return dbEntityColumnToFieldToGetters.stream()
                 .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
-                .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
+                .findFirst().orElseThrow(() -> new DbManagerException(DbManagerError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
                 .getDbColumnName();
     }
 
-    private String getPrimaryKeyDbColumnName(Class<? extends BaseEntity> dbEntityClass) throws RepositoryException {
+    private String getPrimaryKeyDbColumnName(Class<? extends BaseEntity> dbEntityClass) throws DbManagerException {
         try {
             return getDbEntityColumnToFieldToGetters(dbEntityClass).stream()
                     .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
-                    .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
+                    .findFirst().orElseThrow(() -> new DbManagerException(DbManagerError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
                     .getDbColumnName();
         } catch(IntrospectionException e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_RUN_QUERY__ERROR,e.getMessage());
+            throw new DbManagerException(DbManagerError.REPOSITORY_RUN_QUERY__ERROR,e.getMessage());
         }
     }
 
-    public enum QueryType {
+    protected enum QueryType {
         INSERT,
         UPDATE,
         DELETE,
         GET
     }
 
-    public enum OrderBy {
+    protected enum OrderBy {
         DESC("DESC"),
         ASC("ASC");
 
@@ -478,7 +419,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         OrderBy(String queryBase) {
             this.queryBase = queryBase;
         }
-        public String getQueryEquivalent(String relevantFieldName) {
+        private String getQueryEquivalent(String relevantFieldName) {
             switch(this) {
                 case DESC:
                 case ASC:
