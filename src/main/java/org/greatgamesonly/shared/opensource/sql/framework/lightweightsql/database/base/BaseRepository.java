@@ -23,16 +23,14 @@ import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.
 public abstract class BaseRepository<E extends BaseEntity> {
 
     private static Connection connection;
-    private final Class<E> dbEntityClass;
+    private Class<E> dbEntityClass;
 
-    public BaseRepository() {
-        if(!this.getClass().isAnnotationPresent(Repository.class)) {
-            throw new RuntimeException("Repository annotation must be set for repository class");
-        }
-        dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
-    }
+    public BaseRepository() {}
 
     private Class<E> getDbEntityClass() {
+        if(dbEntityClass == null) {
+            dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
+        }
         return dbEntityClass;
     }
 
