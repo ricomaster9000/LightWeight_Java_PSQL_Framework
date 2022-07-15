@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.databasesetupmanager.database;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,6 +7,6 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-@interface PrimaryKey {
-    String key() default "";
+public @interface DBIgnore {
+    public String key() default "";
 }
