@@ -16,8 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.greatgamesonly.reflection.utils.ReflectionUtils.callReflectionMethod;
-import static org.greatgamesonly.reflection.utils.ReflectionUtils.callReflectionMethodGeneric;
+import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 
 public abstract class BaseRepository<E extends BaseEntity> {
@@ -29,7 +28,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public Class<E> getDbEntityClass() {
         if(dbEntityClass == null) {
-            dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
+            if(this.getClass().isAnnotationPresent(Repository.class)) {
+                dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
+            } else if(this.getClass().getName().endsWith("_subclass")/*Quarkus_Support*/) {
+                dbEntityClass = (Class<E>) getClassByName(this.getClass().getName().replaceAll("_subclass","")).getAnnotation(Repository.class).dbEntityClass();
+            }
         }
         return dbEntityClass;
     }
