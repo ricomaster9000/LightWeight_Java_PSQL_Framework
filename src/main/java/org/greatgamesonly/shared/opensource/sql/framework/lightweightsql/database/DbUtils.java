@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 
 public class DbUtils {
-    private static final Map<String, List<DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
+    private static final Map<String, HashSet<DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
 
-    public static List<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<?> entityClass) throws IntrospectionException {
+    public static HashSet<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<?> entityClass) throws IntrospectionException {
         if(
             inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()) == null ||
             inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()).isEmpty()
@@ -23,7 +23,7 @@ public class DbUtils {
                     entityClass.getSuperclass().getSuperclass() != null &&
                     entityClass.getSuperclass().getSuperclass().equals(BaseEntity.class));
 
-            inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(), new ArrayList<>());
+            inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(), new HashSet<>());
             Field[] fields = getClassFields(entityClass, false, List.of(DBIgnore.class));
             Set<String> getters = getGetters(entityClass);
             Set<String> setters = getSetters(entityClass);

@@ -123,7 +123,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         if(existingEntity == null) {
             existingEntity = insertEntities(entity).get(0);
         } else {
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
+            HashSet<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
             try {
                 dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             } catch (IntrospectionException e) {
@@ -305,7 +305,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToInsert == null || entitiesToInsert.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToInsert value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            HashSet<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
 
             stringBuilder.append(String.format("INSERT INTO %s (", entitiesToInsert[0].getClass().getAnnotation(Entity.class).tableName()));
             stringBuilder.append(
@@ -359,7 +359,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToUpdate == null || entitiesToUpdate.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToUpdate value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            HashSet<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
             stringBuilder.append(String.format("UPDATE %s SET ", entitiesToUpdate[0].getClass().getAnnotation(Entity.class).tableName()));
@@ -405,7 +405,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToDelete == null || entitiesToDelete.length <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
-            List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+            HashSet<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
             stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", entitiesToDelete[0].getClass().getAnnotation(Entity.class).tableName(), primaryKeyColumnName));
@@ -447,7 +447,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return new QueryRunner();
     }
 
-    private String getPrimaryKeyDbColumnName(List<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters) throws RepositoryException {
+    private String getPrimaryKeyDbColumnName(HashSet<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters) throws RepositoryException {
         return dbEntityColumnToFieldToGetters.stream()
                 .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
                 .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
