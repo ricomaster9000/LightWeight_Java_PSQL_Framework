@@ -87,7 +87,9 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceFromColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceToColumnName());
                 }
-                dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
+                if(field.isAnnotationPresent(ColumnName.class)) {
+                    dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
+                }
 
                 if(!field.isAnnotationPresent(ColumnName.class) &&
                    !field.isAnnotationPresent(OneToMany.class) &&
