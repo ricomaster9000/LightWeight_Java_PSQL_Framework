@@ -52,10 +52,11 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
                         callReflectionMethod(
                                 entity,
                                 dbEntityColumnToFieldToGetter.getSetterMethodName(),
-                                toOneEntities
+                                new Object[]{toOneEntities
                                         .stream()
                                         .filter(manyToOne -> manyToOne.getId().equals(entityManyToOneReferenceId))
-                                        .findFirst()
+                                        .findFirst()},
+                                dbEntityColumnToFieldToGetter.getMethodParamTypes()
                         );
                     }
                 }

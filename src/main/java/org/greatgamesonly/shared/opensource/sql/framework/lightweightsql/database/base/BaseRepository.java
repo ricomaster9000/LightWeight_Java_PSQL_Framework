@@ -89,7 +89,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             long countTotal;
             ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
                     getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
-                    returnPreparedValueForQuery(columnKey));
+                    returnPreparedValueForQuery(columnKey) + ";");
             countTotal = resultSet.getLong(0);
             resultSet.close();
             return countTotal;
@@ -101,11 +101,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
         try {
             long countTotal;
-            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
+            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) AS total FROM " +
                     getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
                     returnPreparedValueForQuery(columnKey) +
-                    " AND " + columnName2 + " = " + returnPreparedValueForQuery(columnKey2));
-            countTotal = resultSet.getLong(0);
+                    " AND " + columnName2 + " = " + returnPreparedValueForQuery(columnKey2) + ";");
+            resultSet.next();
+            countTotal = resultSet.getLong("total");
             resultSet.close();
             return countTotal;
         } catch (SQLException e) {
@@ -132,7 +133,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         callReflectionMethod(
                                 finalExistingEntity,
                                 dbEntityColumnToFieldToGetter.getSetterMethodName(),
-                                callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())
+                                new Object[]{callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())},
+                                dbEntityColumnToFieldToGetter.getMethodParamTypes()
                         );
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR, e);
@@ -193,9 +195,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             }
                             if (dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                                 DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(dbEntityColumnToFieldToGetter.getLinkedClassEntity(),dbEntityColumnToFieldToGetter);
-                                callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), toAdd.get(0).getId());
+                                callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{toAdd.get(0).getId()},manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
                             }
-                            callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toAdd);
+                            callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd},dbEntityColumnToFieldToGetter.getMethodParamTypes());
                         }
                     }
                 }
@@ -239,7 +241,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         List<? extends BaseEntity> oneToOneRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
                         for (BaseEntity relationEntity : oneToOneRelationEntities) {
                             E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethod(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
-                            callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), relationEntity);
+                            callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity},dbEntityColumnToFieldToGetter.getMethodParamTypes());
                         }
                     }
                 }
@@ -264,10 +266,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected ResultSet executeQueryRaw(String queryToRun) throws RepositoryException {
-        ResultSet entityList;
+        ResultSet entityList = null;
         try {
             CallableStatement callStatement = getConnection().prepareCall(queryToRun);
-            entityList = callStatement.executeQuery();
+            if(queryToRun.startsWith("SELECT")) {
+                entityList = callStatement.executeQuery();
+            } else {
+                callStatement.executeUpdate();
+            }
         } catch (SQLException e) {
             System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
             throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);

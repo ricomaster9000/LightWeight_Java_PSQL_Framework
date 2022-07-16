@@ -36,6 +36,8 @@ public class DbEntityColumnToFieldToGetter {
 
     private String additionalQueryToAdd;
 
+    private Class<?>[] methodParamTypes;
+
     public String getDbColumnName() {
         return dbColumnName;
     }
@@ -191,5 +193,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setAdditionalQueryToAdd(String additionalQueryToAdd) {
         this.additionalQueryToAdd = additionalQueryToAdd;
+    }
+
+    public Class<?>[] getMethodParamTypes() {
+        return methodParamTypes;
+    }
+
+    public void setMethodParamTypes(Class<?>... methodParamTypes) {
+        this.methodParamTypes = methodParamTypes;
     }
 }

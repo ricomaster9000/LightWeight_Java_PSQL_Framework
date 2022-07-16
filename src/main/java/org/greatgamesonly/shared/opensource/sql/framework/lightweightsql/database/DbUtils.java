@@ -5,7 +5,6 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +37,7 @@ public class DbUtils {
             for (Field field : fields) {
                 DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter = new DbEntityColumnToFieldToGetter();
                 dbEntityColumnToFieldToGetter.setClassFieldName(field.getName());
+                dbEntityColumnToFieldToGetter.setMethodParamTypes(field.getType());
 
                 if(field.isAnnotationPresent(ModifyDateAutoSet.class)) {
                     dbEntityColumnToFieldToGetter.setModifyDateAutoSet(true);
