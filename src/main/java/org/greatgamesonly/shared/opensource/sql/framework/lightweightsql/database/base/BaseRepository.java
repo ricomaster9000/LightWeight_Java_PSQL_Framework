@@ -87,10 +87,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
         try {
             long countTotal;
-            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) FROM " +
+            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) as total FROM " +
                     getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
                     returnPreparedValueForQuery(columnKey) + ";");
-            countTotal = resultSet.getLong(0);
+            resultSet.next();
+            countTotal = resultSet.getLong("total");
             resultSet.close();
             return countTotal;
         } catch (SQLException e) {
