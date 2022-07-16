@@ -27,7 +27,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public BaseRepository() {}
 
-    private Class<E> getDbEntityClass() {
+    public Class<E> getDbEntityClass() {
         if(dbEntityClass == null) {
             dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
         }
