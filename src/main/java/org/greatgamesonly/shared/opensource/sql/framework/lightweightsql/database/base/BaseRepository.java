@@ -30,8 +30,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
         if(dbEntityClass == null) {
             if(this.getClass().isAnnotationPresent(Repository.class)) {
                 dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
-            } else if(this.getClass().getName().endsWith("_subclass")/*Quarkus_Support*/) {
-                dbEntityClass = (Class<E>) getClassByName(this.getClass().getName().replaceAll("_subclass","")).getAnnotation(Repository.class).dbEntityClass();
+            } else if(this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
+                dbEntityClass = (Class<E>) getClassByName(this.getClass().getName().replaceAll("_Subclass","")).getAnnotation(Repository.class).dbEntityClass();
             }
         }
         return dbEntityClass;
