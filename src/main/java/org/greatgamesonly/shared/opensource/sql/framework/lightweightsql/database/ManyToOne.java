@@ -13,4 +13,6 @@ public @interface ManyToOne {
     public String key() default "";
 
     public String linkedDbColumnName();
+
+    public Class<? extends BaseEntity> linkedEntityClass();
 }

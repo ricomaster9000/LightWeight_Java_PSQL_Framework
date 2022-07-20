@@ -31,7 +31,7 @@ public class Lead extends BaseEntity {
 
     @ManyToOneReferenceId(referenceFromColumnName = "status_id", referenceToColumnName = "id", toOneEntityClass = StatusType.class)
     protected Long statusId;
-    @ManyToOne(linkedDbColumnName = "status_id")
+    @ManyToOne(linkedDbColumnName = "status_id", linkedEntityClass = StatusType.class)
     protected StatusType status;
     @ColumnName("contact_type_id")
     @DoNotUpdateInDb

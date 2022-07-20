@@ -80,6 +80,7 @@ public class DbUtils {
                     }
                     dbEntityColumnToFieldToGetter.setForManyToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedDbColumnName(field.getAnnotation(ManyToOne.class).linkedDbColumnName());
+                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(ManyToOne.class).linkedEntityClass());
                 }
                 if(field.isAnnotationPresent(ManyToOneReferenceId.class)) {
                     dbEntityColumnToFieldToGetter.setForManyToOneReferenceId(true);
