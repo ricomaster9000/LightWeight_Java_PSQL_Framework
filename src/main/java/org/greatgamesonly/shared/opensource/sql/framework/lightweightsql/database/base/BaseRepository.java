@@ -180,37 +180,39 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
             if(queryType.equals(QueryType.GET)) {
                 if(relationFieldToGetters == null) {
-                    getAllRelationFieldToGetters(getDbEntityClass());
+                    relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
                 }
-                // Optimize relation get queries to be quicker - BEGIN
-                HashMap<Long, E> entityHashMap = new HashMap<>();
-                Long minId = 0L;
-                Long maxId = 0L;
-                for (E entity : entityList) {
-                    if (minId == null) {
-                        minId = entity.getId();
+                if(!relationFieldToGetters.isEmpty()) {
+                    // Optimize relation get queries to be quicker - BEGIN
+                    HashMap<Long, E> entityHashMap = new HashMap<>();
+                    Long minId = 0L;
+                    Long maxId = 0L;
+                    for (E entity : entityList) {
+                        if (minId == null) {
+                            minId = entity.getId();
+                        }
+                        if (maxId == null) {
+                            maxId = entity.getId();
+                        }
+                        if (entity.getId() < minId) {
+                            minId = entity.getId();
+                        }
+                        if (entity.getId() > maxId) {
+                            maxId = entity.getId();
+                        }
+                        entityHashMap.put(entity.getId(), entity);
                     }
-                    if (maxId == null) {
-                        maxId = entity.getId();
-                    }
-                    if (entity.getId() < minId) {
-                        minId = entity.getId();
-                    }
-                    if (entity.getId() > maxId) {
-                        maxId = entity.getId();
-                    }
-                    entityHashMap.put(entity.getId(), entity);
-                }
-                // Optimize relation get queries to be quicker - END
-                for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
-                    if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
-                        continue; // Handled in the BaseBeanListHandler
-                    }
-                    BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                    List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
-                    for (BaseEntity relationEntity : toRelationEntities) {
-                        E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethod(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
-                        callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity},dbEntityColumnToFieldToGetter.getMethodParamTypes());
+                    // Optimize relation get queries to be quicker - END
+                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
+                        if (dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
+                            continue; // Handled in the BaseBeanListHandler
+                        }
+                        BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                        List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
+                        for (BaseEntity relationEntity : toRelationEntities) {
+                            E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethod(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
+                            callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
+                        }
                     }
                 }
             }
