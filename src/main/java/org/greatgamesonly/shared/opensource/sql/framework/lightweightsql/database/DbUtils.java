@@ -7,6 +7,7 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 
@@ -134,6 +135,12 @@ public class DbUtils {
     public static List<DbEntityColumnToFieldToGetter> getManyToOneRelationFieldToGetters(Class<?> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(DbEntityColumnToFieldToGetter::isForManyToOneRelation)
+                .collect(Collectors.toList());
+    }
+
+    public static List<DbEntityColumnToFieldToGetter> getAllRelationFieldToGetters(Class<?> entityClass) throws IntrospectionException {
+        return getDbEntityColumnToFieldToGetters(entityClass).stream()
+                .filter(dbEntityColumnToFieldToGetter -> dbEntityColumnToFieldToGetter.isForOneToManyRelation() || dbEntityColumnToFieldToGetter.isForOneToOneRelation() || dbEntityColumnToFieldToGetter.isForManyToOneRelation())
                 .collect(Collectors.toList());
     }
 
