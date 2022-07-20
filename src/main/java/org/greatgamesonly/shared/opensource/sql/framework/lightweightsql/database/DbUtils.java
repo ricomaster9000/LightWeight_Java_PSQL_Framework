@@ -61,7 +61,7 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(field.getAnnotation(OneToMany.class).addToWherePartInGetQuery());
                 }
                 if(field.isAnnotationPresent(OneToOne.class)) {
-                    if(!field.getType().isInstance(BaseEntity.class)) {
+                    if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
                         throw new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value type");
                     }
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
@@ -74,7 +74,7 @@ public class DbUtils {
                     );
                 }
                 if(field.isAnnotationPresent(ManyToOne.class)) {
-                    if(!field.getType().isInstance(BaseEntity.class)) {
+                    if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
                         throw new IntrospectionException("ManyToOne annotation can only be applied to BaseEntity value type");
                     }
                     dbEntityColumnToFieldToGetter.setForManyToOneRelation(true);
