@@ -36,6 +36,16 @@ public class DbUtils {
             }
 
             for (Field field : fields) {
+                boolean isValidField = (
+                    BASE_VALUE_TYPES.contains(field.getType()) ||
+                    Collection.class.isAssignableFrom(field.getType()) ||
+                    BaseEntity.class.isAssignableFrom(field.getType()) ||
+                    field.getType().isEnum() ||
+                    field.getType().isPrimitive()
+                );
+                if(!isValidField) {
+                    continue;
+                }
                 DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter = new DbEntityColumnToFieldToGetter();
                 dbEntityColumnToFieldToGetter.setClassFieldName(field.getName());
                 dbEntityColumnToFieldToGetter.setMethodParamTypes(field.getType());
