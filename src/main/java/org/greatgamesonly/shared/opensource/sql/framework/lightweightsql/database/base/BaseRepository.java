@@ -494,10 +494,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
     }
 
-    private E[] getToInsertGenericArray() {
-
-    }
-
     public enum QueryType {
         INSERT,
         UPDATE,
