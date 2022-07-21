@@ -259,7 +259,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityList;
     }
 
-    protected final List<E> insertEntitiesList(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+    protected final <T extends BaseEntity> List<E> insertEntitiesList(List<T> entitiesToInsert) throws RepositoryException {
         List<E> es = insertEntities((E[]) entitiesToInsert.toArray());
         return es;
     }
@@ -400,6 +400,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
     }
 
+    @SafeVarargs
     private List<? extends BaseEntity> handleEntityRelationshipInsertsOrUpdates(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, E... entitiesParam) throws RepositoryException {
         List<? extends BaseEntity> relationToEntities = new ArrayList<>();
         try {
