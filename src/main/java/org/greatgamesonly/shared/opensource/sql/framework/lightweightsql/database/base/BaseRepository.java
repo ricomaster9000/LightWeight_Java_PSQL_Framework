@@ -270,7 +270,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     protected final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
         if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
@@ -340,7 +340,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
         if(entitiesToUpdate == null || entitiesToUpdate.isEmpty()) {
-            return null;
+            return new ArrayList<>();
         }
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
