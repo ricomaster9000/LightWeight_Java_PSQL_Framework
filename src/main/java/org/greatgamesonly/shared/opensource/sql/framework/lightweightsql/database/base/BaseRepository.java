@@ -327,8 +327,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters);
     }
 
-    protected final List<E> updateEntitiesList(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
-        return updateEntities((E[]) entitiesToUpdate.toArray());
+    protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+        Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
+        try {
+            for (int i = 0; i < entitiesToInsert.size(); i++) {
+                ((Object[]) toInsert)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+            }
+        } catch (Exception e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
+        }
+        return updateEntities((E) toInsert);
     }
 
     @SafeVarargs
@@ -427,7 +435,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         }
                     }
                     insertEntities = toManyRepo.insertEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
-                    updateEntities = toManyRepo.updateEntitiesList(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
+                    updateEntities = toManyRepo.updateEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
                     relationToEntities = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();
