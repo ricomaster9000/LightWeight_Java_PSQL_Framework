@@ -261,6 +261,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+        if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
+            return null;
+        }
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
             for (int i = 0; i < entitiesToInsert.size(); i++) {
@@ -423,7 +426,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             // Handle Relational db inserts or updates
             if (!relationFieldToGetters.isEmpty()) {
                 for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
-                    BaseRepository<? extends BaseEntity> toManyRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                    BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                     List<? extends BaseEntity> insertEntities;
                     List<? extends BaseEntity> updateEntities;
                     for (E entity : entitiesParam) {
@@ -434,8 +437,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             relationToEntities.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         }
                     }
-                    insertEntities = toManyRepo.insertEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
-                    updateEntities = toManyRepo.updateEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
+                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
+                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
                     relationToEntities = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();
