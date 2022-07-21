@@ -339,6 +339,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
+        if(entitiesToUpdate == null || entitiesToUpdate.isEmpty()) {
+            return null;
+        }
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
             for (int i = 0; i < entitiesToUpdate.size(); i++) {
@@ -368,7 +371,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
-            stringBuilder.append(String.format("UPDATE %s SET ", entitiesToUpdate[0].getClass().getAnnotation(Entity.class).tableName()));
+            stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityClass().getAnnotation(Entity.class).tableName()));
             for (BaseEntity entityToUpdate : entitiesToUpdate) {
 
                 List<String> toAppendValues = new ArrayList<>();
