@@ -24,6 +24,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private static Connection connection;
     private Class<E> dbEntityClass;
+    private Class<E[]> dbEntityArrayClass;
 
     public BaseRepository() {}
 
@@ -36,6 +37,13 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
         }
         return dbEntityClass;
+    }
+
+    public Class<E[]> getDbEntityArrayClass() {
+        if(dbEntityArrayClass == null) {
+            dbEntityArrayClass = (Class<E[]>) Array.newInstance(getDbEntityClass(),0).getClass();
+        }
+        return dbEntityArrayClass;
     }
 
     public Map<String, String> getDbConnectionDetails() {
@@ -272,7 +280,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
         }
-        return insertEntities((E) toInsert);
+        return insertEntities(getDbEntityArrayClass().cast(toInsert));
     }
 
     @SafeVarargs
@@ -330,16 +338,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters);
     }
 
-    protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
-        Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
+    protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
+        Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
-            for (int i = 0; i < entitiesToInsert.size(); i++) {
-                ((Object[]) toInsert)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+            for (int i = 0; i < entitiesToUpdate.size(); i++) {
+                ((Object[]) toUpdate)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToUpdate.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
         }
-        return updateEntities((E) toInsert);
+        return updateEntities(getDbEntityArrayClass().cast(toUpdate));
     }
 
     @SafeVarargs
