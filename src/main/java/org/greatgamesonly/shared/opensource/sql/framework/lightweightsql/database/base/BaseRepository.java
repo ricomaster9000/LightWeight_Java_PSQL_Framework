@@ -10,6 +10,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 
 import java.beans.IntrospectionException;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.*;
@@ -260,14 +261,15 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
-        if(entitiesToInsert == null) {
-            return null;
+        Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
+        try {
+            for (int i = 0; i < entitiesToInsert.size(); i++) {
+                ((Object[]) toInsert)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+            }
+        } catch (Exception e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
         }
-        E[] toInsert = (E[]) new Object[entitiesToInsert.size()];
-        for(int i = 0; i < toInsert.length; i++) {
-            toInsert[i] = (E) entitiesToInsert.get(i);
-        }
-        return insertEntities(toInsert);
+        return insertEntities((E) toInsert);
     }
 
     @SafeVarargs
@@ -490,6 +492,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch(IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_RUN_QUERY__ERROR,e.getMessage());
         }
+    }
+
+    private E[] getToInsertGenericArray() {
+
     }
 
     public enum QueryType {
