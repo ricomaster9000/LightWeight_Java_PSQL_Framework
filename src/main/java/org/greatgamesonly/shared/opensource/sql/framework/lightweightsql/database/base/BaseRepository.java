@@ -264,7 +264,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             return null;
         }
         E[] toInsert = (E[]) new Object[entitiesToInsert.size()];
-        for(int i = 0; i < toInsert.length) {
+        for(int i = 0; i < toInsert.length; i++) {
             toInsert[i] = (E) entitiesToInsert.get(i);
         }
         return insertEntities(toInsert);
