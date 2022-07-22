@@ -168,7 +168,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         for(int i = 0; i < entities.size(); i++) {
             E existingEntity = entities.get(i).getId() != null ? getById(entities.get(i).getId()) : null;
             if (existingEntity == null) {
-                ((Object[]) entitiesToInsert)[i] = entities.get(i);
+                Array.set(entitiesToInsert, i, entities.get(i));
             } else {
                 Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
                 try {
@@ -191,7 +191,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         }
                     }
                 }
-                ((Object[]) entitiesToUpdate)[i] = existingEntity;
+                Array.set(entitiesToUpdate, i, existingEntity);
             }
         }
         return Stream.concat(insertEntities(getDbEntityArrayClass().cast(entitiesToInsert)).stream(),updateEntities(getDbEntityArrayClass().cast(entitiesToUpdate)).stream()).collect(Collectors.toList());
