@@ -454,7 +454,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();
                         if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
-                            DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), dbEntityColumnToFieldToGetter);
+                            DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
                             callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntities.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
                         } else {
                             for (BaseEntity toManyEntity : relationToEntities) {
