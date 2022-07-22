@@ -431,8 +431,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     @SafeVarargs
-    private List<? extends BaseEntity> handleEntityRelationshipInsertsOrUpdates(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, E... entitiesParam) throws RepositoryException {
-        List<? extends BaseEntity> relationToEntities = new ArrayList<>();
+    private List<?> handleEntityRelationshipInsertsOrUpdates(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, E... entitiesParam) throws RepositoryException {
+        List<?> relationToEntities = new ArrayList<BaseEntity>();
         try {
             // Handle Relational db inserts or updates
             if (!relationFieldToGetters.isEmpty()) {
@@ -440,26 +440,28 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                     List<? extends BaseEntity> insertEntities;
                     List<? extends BaseEntity> updateEntities;
+                    List<? extends BaseEntity> relationToEntitiesInsertedOrUpdated = new ArrayList<>();
                     for (E entity : entitiesParam) {
                         // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
                         if (dbEntityColumnToFieldToGetter.isForManyToOneRelation() || dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
-                            relationToEntities.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         } else {
-                            relationToEntities.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         }
                     }
-                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
-                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntities.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
-                    relationToEntities = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
+                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
+                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
+                    relationToEntitiesInsertedOrUpdated = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
+                    relationToEntities = Stream.concat(relationToEntities.stream(), relationToEntitiesInsertedOrUpdated.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();
                         if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
-                            callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntities.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
+                            callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntitiesInsertedOrUpdated.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
                         } else {
-                            for (BaseEntity toManyEntity : relationToEntities) {
-                                if (callReflectionMethod(toManyEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
-                                    toAdd.add(toManyEntity);
+                            for (BaseEntity toEntity : relationToEntitiesInsertedOrUpdated) {
+                                if (callReflectionMethod(toEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
+                                    toAdd.add(toEntity);
                                 }
                             }
                             callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
