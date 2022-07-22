@@ -164,7 +164,7 @@ public class DbUtils {
     public static Map<String, String> getColumnsToFieldsMap(Class<?> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass)
                 .stream()
-                .filter(columnToField -> !columnToField.isForOneToManyRelation())
+                .filter(columnToField -> !columnToField.isForOneToManyRelation() && !columnToField.isForManyToOneRelation() && !columnToField.isForOneToOneRelation())
                 .collect(Collectors.toMap(DbEntityColumnToFieldToGetter::getDbColumnName, DbEntityColumnToFieldToGetter::getClassFieldName));
     }
 
