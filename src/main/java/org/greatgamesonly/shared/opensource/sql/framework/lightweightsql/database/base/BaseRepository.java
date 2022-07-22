@@ -301,13 +301,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             stringBuilder.append(String.format("INSERT INTO %s (", getDbEntityClass().getAnnotation(Entity.class).tableName()));
             stringBuilder.append(
                 dbEntityColumnToFieldToGetters.stream()
-                .filter(dbEntityColumnToFieldToGetter ->
-                        dbEntityColumnToFieldToGetter.hasSetter() &&
-                        !dbEntityColumnToFieldToGetter.isPrimaryKey() &&
-                        !dbEntityColumnToFieldToGetter.isForOneToManyRelation() &&
-                        !dbEntityColumnToFieldToGetter.isForManyToOneRelation() &&
-                        !dbEntityColumnToFieldToGetter.isForOneToOneRelation()
-                )
+                .filter(this::includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations)
                 .map(DbEntityColumnToFieldToGetter::getDbColumnName)
                 .collect(Collectors.joining(","))
             );
@@ -318,7 +312,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 List<String> toAppendValues = new ArrayList<>();
                 for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                     try {
-                        if(dbEntityColumnToFieldToGetter.hasSetter() && !dbEntityColumnToFieldToGetter.isPrimaryKey()) {
+                        if(dbEntityColumnToFieldToGetter.hasSetter() && includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(dbEntityColumnToFieldToGetter)) {
                             Object getterValue = callReflectionMethod(entityToInsert, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             toAppendValues.add((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
                         }
@@ -377,12 +371,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 List<String> toAppendValues = new ArrayList<>();
                 for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                     try {
-                        if(dbEntityColumnToFieldToGetter.hasSetter() &&
-                            !dbEntityColumnToFieldToGetter.isPrimaryKey() &&
-                            !dbEntityColumnToFieldToGetter.isForOneToManyRelation() &&
-                            !dbEntityColumnToFieldToGetter.isForManyToOneRelation() &&
-                            !dbEntityColumnToFieldToGetter.isForOneToOneRelation()
-                        ) {
+                        if(includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(dbEntityColumnToFieldToGetter) && dbEntityColumnToFieldToGetter.canBeUpdatedInDb()) {
                             Object getterValue = callReflectionMethod(entityToUpdate, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
@@ -517,6 +506,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch(IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_RUN_QUERY__ERROR,e.getMessage());
         }
+    }
+
+    private boolean includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) {
+        return (
+           dbEntityColumnToFieldToGetter.hasSetter() &&
+           !dbEntityColumnToFieldToGetter.isPrimaryKey() &&
+           !dbEntityColumnToFieldToGetter.isForOneToManyRelation() &&
+           !dbEntityColumnToFieldToGetter.isForManyToOneRelation() &&
+           !dbEntityColumnToFieldToGetter.isForOneToOneRelation()
+        );
     }
 
     public enum QueryType {
