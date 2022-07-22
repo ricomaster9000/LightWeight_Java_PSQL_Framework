@@ -43,8 +43,8 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
                         if(toOneEntities.isEmpty()) {
                             BaseRepository<? extends BaseEntity> toOneRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                             toOneRepo.getAll().forEach(toOneEntity -> toOneEntities.put(toOneEntity.getId(),toOneEntity));
-                            manyToOneRelationValueHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
-                            manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
+                            BaseBeanListHandler.manyToOneRelationValueHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
+                            BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
                         }
                         DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
                         Object entityManyToOneReferenceIdVal = callReflectionMethod(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
@@ -62,10 +62,10 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
     }
 
     private HashMap<Long,Object> getManyToOneRelationValueHolder(Class<? extends BaseEntity> linkedClassEntity) {
-        HashMap<Long,Object> result = manyToOneRelationValueHolder.get(linkedClassEntity);
-        Timestamp timestamp = manyToOneRelationCacheDateHolder.get(linkedClassEntity);
-        if(timestamp != null && timestamp.after(DbUtils.nowDbTimestamp(DbConnectionManager.getInMemoryCacheHoursForManyToOne()))) {
-            manyToOneRelationValueHolder.remove(linkedClassEntity);
+        HashMap<Long,Object> result = BaseBeanListHandler.manyToOneRelationValueHolder.get(linkedClassEntity);
+        Timestamp timestamp = BaseBeanListHandler.manyToOneRelationCacheDateHolder.get(linkedClassEntity);
+        if(timestamp != null && timestamp.before(DbUtils.nowDbTimestamp(DbConnectionManager.getInMemoryCacheHoursForManyToOne()))) {
+            BaseBeanListHandler.manyToOneRelationValueHolder.remove(linkedClassEntity);
             result = new HashMap<>();
         }
         if(result == null) {
