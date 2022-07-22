@@ -268,7 +268,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityList;
     }
 
-    protected final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+    public final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
         if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
             return new ArrayList<>();
         }
@@ -332,7 +332,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters);
     }
 
-    protected final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
+    public final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
         if(entitiesToUpdate == null || entitiesToUpdate.isEmpty()) {
             return new ArrayList<>();
         }
