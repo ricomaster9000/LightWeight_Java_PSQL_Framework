@@ -426,7 +426,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             // Handle Relational db inserts or updates
             if (!relationFieldToGetters.isEmpty()) {
                 for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
-                    BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                     List<? extends BaseEntity> insertEntities;
                     List<? extends BaseEntity> updateEntities;
                     List<? extends BaseEntity> relationToEntitiesInsertedOrUpdated = new ArrayList<>();
@@ -438,8 +437,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         }
                     }
-                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity.getId() == null).collect(Collectors.toList()));
-                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity.getId() != null).collect(Collectors.toList()));
+                    if(relationToEntitiesInsertedOrUpdated.isEmpty()) {
+                        continue;
+                    }
+                    BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() == null).collect(Collectors.toList()));
+                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() != null).collect(Collectors.toList()));
                     relationToEntitiesInsertedOrUpdated = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
                     relationToEntities = Stream.concat(relationToEntities.stream(), relationToEntitiesInsertedOrUpdated.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
