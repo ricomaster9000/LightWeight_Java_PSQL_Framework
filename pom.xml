@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>com.github.ricomaster9000</groupId>
 			<artifactId>Java-Reflection-Utils</artifactId>
-			<version>1.0.16</version>
+			<version>main-48efcac836-1</version>
 		</dependency>
 	</dependencies>
 	<build>
