@@ -194,6 +194,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 Array.set(entitiesToUpdate, i, existingEntity);
             }
         }
+        entitiesToInsert = Arrays.stream(((Object[])entitiesToInsert)).filter(Objects::nonNull).toArray();
+        entitiesToUpdate = Arrays.stream(((Object[])entitiesToUpdate)).filter(Objects::nonNull).toArray();
         return Stream.concat(insertEntities(getDbEntityArrayClass().cast(entitiesToInsert)).stream(),updateEntities(getDbEntityArrayClass().cast(entitiesToUpdate)).stream()).collect(Collectors.toList());
     }
 
