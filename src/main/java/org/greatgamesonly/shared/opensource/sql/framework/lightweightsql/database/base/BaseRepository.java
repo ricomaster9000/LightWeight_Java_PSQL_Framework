@@ -163,12 +163,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
         if(entities == null || entities.isEmpty()) {
             return new ArrayList<>();
         }
-        E[] entitiesToInsert = getDbEntityArrayClass().cast(Array.newInstance(getDbEntityArrayClass(),entities.size()));
-        E[] entitiesToUpdate = getDbEntityArrayClass().cast(Array.newInstance(getDbEntityArrayClass(),entities.size()));
+        Object entitiesToInsert = Array.newInstance(getDbEntityArrayClass(),entities.size());
+        Object entitiesToUpdate = Array.newInstance(getDbEntityArrayClass(),entities.size());
         for(int i = 0; i < entities.size(); i++) {
             E existingEntity = entities.get(i).getId() != null ? getById(entities.get(i).getId()) : null;
             if (existingEntity == null) {
-                entitiesToInsert[i] = entities.get(i);
+                ((Object[]) entitiesToInsert)[i] = entities.get(i);
             } else {
                 Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
                 try {
@@ -191,10 +191,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         }
                     }
                 }
-                entitiesToUpdate[i] = existingEntity;
+                ((Object[]) entitiesToUpdate)[i] = existingEntity;
             }
         }
-        return Stream.concat(insertEntities(entitiesToInsert).stream(),updateEntities(entitiesToUpdate).stream()).collect(Collectors.toList());
+        return Stream.concat(insertEntities(getDbEntityArrayClass().cast(entitiesToInsert)).stream(),updateEntities(getDbEntityArrayClass().cast(entitiesToUpdate)).stream()).collect(Collectors.toList());
     }
 
     protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
