@@ -275,7 +275,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
             for (int i = 0; i < entitiesToInsert.size(); i++) {
-                ((Object[]) toInsert)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+                ((Object[]) toInsert)[i] = shallowMergeNonBaseObjectIntoNonBaseObject(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
@@ -339,7 +339,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
             for (int i = 0; i < entitiesToUpdate.size(); i++) {
-                ((Object[]) toUpdate)[i] = mergeNonBaseObjectIntoNonBaseObject(entitiesToUpdate.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+                ((Object[]) toUpdate)[i] = shallowMergeNonBaseObjectIntoNonBaseObject(entitiesToUpdate.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
             }
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
