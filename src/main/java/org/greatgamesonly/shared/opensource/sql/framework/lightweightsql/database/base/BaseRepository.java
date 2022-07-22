@@ -159,6 +159,44 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return existingEntity;
     }
 
+    public List<E> insertOrUpdateEntities(List<E> entities) throws RepositoryException {
+        if(entities == null || entities.isEmpty()) {
+            return new ArrayList<>();
+        }
+        E[] entitiesToInsert = getDbEntityArrayClass().cast(Array.newInstance(getDbEntityArrayClass(),entities.size()));
+        E[] entitiesToUpdate = getDbEntityArrayClass().cast(Array.newInstance(getDbEntityArrayClass(),entities.size()));
+        for(int i = 0; i < entities.size(); i++) {
+            E existingEntity = entities.get(i).getId() != null ? getById(entities.get(i).getId()) : null;
+            if (existingEntity == null) {
+                entitiesToInsert[i] = entities.get(i);
+            } else {
+                Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
+                try {
+                    dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+                } catch (IntrospectionException e) {
+                    throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR, e);
+                }
+
+                for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
+                    if (dbEntityColumnToFieldToGetter.canBeUpdatedInDb() && !dbEntityColumnToFieldToGetter.isPrimaryKey()) {
+                        try {
+                            callReflectionMethodQuick(
+                                    existingEntity,
+                                    dbEntityColumnToFieldToGetter.getSetterMethodName(),
+                                    new Object[]{callReflectionMethodQuick(entities.get(i), dbEntityColumnToFieldToGetter.getGetterMethodName())},
+                                    dbEntityColumnToFieldToGetter.getMethodParamTypes()
+                            );
+                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                            throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR, e);
+                        }
+                    }
+                }
+                entitiesToUpdate[i] = existingEntity;
+            }
+        }
+        return Stream.concat(insertEntities(entitiesToInsert).stream(),updateEntities(entitiesToUpdate).stream()).collect(Collectors.toList());
+    }
+
     protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
         return executeQuery(queryToRun, QueryType.GET, null, queryParameters);
     }
@@ -289,7 +327,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         try {
             if(entitiesToInsert == null || entitiesToInsert.length <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToInsert value was passed");
+                return new ArrayList<>();
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
@@ -354,7 +392,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         try {
             if(entitiesToUpdate == null || entitiesToUpdate.length <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToUpdate value was passed");
+                return new ArrayList<>();
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
