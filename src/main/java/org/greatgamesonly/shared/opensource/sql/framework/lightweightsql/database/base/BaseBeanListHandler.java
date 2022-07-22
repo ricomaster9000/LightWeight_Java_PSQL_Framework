@@ -47,8 +47,11 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
                             manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
                         }
                         DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
-                        Long entityManyToOneReferenceId = (Long) callReflectionMethod(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
-                        callReflectionMethodQuick(entity,dbEntityColumnToFieldToGetter.getSetterMethodName(),toOneEntities.get(entityManyToOneReferenceId),dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                        Object entityManyToOneReferenceIdVal = callReflectionMethod(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
+                        if(entityManyToOneReferenceIdVal == null) {
+                            continue;
+                        }
+                        callReflectionMethodQuick(entity,dbEntityColumnToFieldToGetter.getSetterMethodName(),toOneEntities.get((Long) entityManyToOneReferenceIdVal),dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
                     }
                 }
             } catch (RepositoryException | IntrospectionException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {

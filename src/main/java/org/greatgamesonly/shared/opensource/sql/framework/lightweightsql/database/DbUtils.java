@@ -111,7 +111,6 @@ public class DbUtils {
                    (dbEntityColumnToFieldToGetter.getDbColumnName() == null || dbEntityColumnToFieldToGetter.getDbColumnName().isBlank())) {
                     throw new IntrospectionException("annotation not set for db entity field, please set in code");
                 }
-
                 if(setters.contains("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()))) {
                     dbEntityColumnToFieldToGetter.setHasSetter(true);
                     dbEntityColumnToFieldToGetter.setSetterMethodName("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()));

@@ -226,7 +226,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
             }
         } catch (SQLException e) {
-            if(e.getSQLState().startsWith("23505")) {
+            if(e.getSQLState() != null && e.getSQLState().startsWith("23505")) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
             }
             throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
