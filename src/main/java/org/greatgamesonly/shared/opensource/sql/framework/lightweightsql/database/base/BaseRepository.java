@@ -163,8 +163,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
         if(entities == null || entities.isEmpty()) {
             return new ArrayList<>();
         }
-        Object entitiesToInsert = Array.newInstance(getDbEntityArrayClass(),entities.size());
-        Object entitiesToUpdate = Array.newInstance(getDbEntityArrayClass(),entities.size());
+        Object entitiesToInsert = Array.newInstance(getDbEntityClass(),entities.size());
+        Object entitiesToUpdate = Array.newInstance(getDbEntityClass(),entities.size());
         for(int i = 0; i < entities.size(); i++) {
             E existingEntity = entities.get(i).getId() != null ? getById(entities.get(i).getId()) : null;
             if (existingEntity == null) {
