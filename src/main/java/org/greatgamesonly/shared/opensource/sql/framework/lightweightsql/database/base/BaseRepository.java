@@ -194,8 +194,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 Array.set(entitiesToUpdate, i, existingEntity);
             }
         }
-        entitiesToInsert = Arrays.stream(((Object[])entitiesToInsert)).filter(Objects::nonNull).toArray();
-        entitiesToUpdate = Arrays.stream(((Object[])entitiesToUpdate)).filter(Objects::nonNull).toArray();
         return Stream.concat(insertEntities(getDbEntityArrayClass().cast(entitiesToInsert)).stream(),updateEntities(getDbEntityArrayClass().cast(entitiesToUpdate)).stream()).collect(Collectors.toList());
     }
 
@@ -347,6 +345,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
             );
             stringBuilder.append(") VALUES ");
             for (E entityToInsert : entitiesToInsert) {
+                if(entityToInsert == null) {
+                    continue;
+                }
                 stringBuilder.append("(");
 
                 List<String> toAppendValues = new ArrayList<>();
@@ -407,6 +408,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
             stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityClass().getAnnotation(Entity.class).tableName()));
             for (BaseEntity entityToUpdate : entitiesToUpdate) {
+                if(entityToUpdate == null) {
+                    continue;
+                }
 
                 List<String> toAppendValues = new ArrayList<>();
                 for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
