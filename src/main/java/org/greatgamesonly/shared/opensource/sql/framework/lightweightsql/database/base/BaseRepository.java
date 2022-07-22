@@ -474,6 +474,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     List<? extends BaseEntity> updateEntities;
                     List<? extends BaseEntity> relationToEntitiesInsertedOrUpdated = new ArrayList<>();
                     for (E entity : entitiesParam) {
+                        if(entity == null) {
+                            continue;
+                        }
                         // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
                         if (dbEntityColumnToFieldToGetter.isForManyToOneRelation() || dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
                             relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
