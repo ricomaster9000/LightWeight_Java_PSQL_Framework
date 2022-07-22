@@ -417,7 +417,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
-            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", entitiesToDelete[0].getClass().getAnnotation(Entity.class).tableName(), primaryKeyColumnName));
+            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityClass().getAnnotation(Entity.class).tableName(), primaryKeyColumnName));
             stringBuilder.append(
                 Arrays.stream(entitiesToDelete)
                 .map(entity -> entity.getId().toString())
@@ -453,16 +453,17 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     relationToEntities = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();
-                        for (BaseEntity toManyEntity : relationToEntities) {
-                            if (callReflectionMethod(toManyEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
-                                toAdd.add(toManyEntity);
-                            }
-                        }
-                        if (dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
+                        if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), dbEntityColumnToFieldToGetter);
-                            callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{toAdd.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
+                            callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntities.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
+                        } else {
+                            for (BaseEntity toManyEntity : relationToEntities) {
+                                if (callReflectionMethod(toManyEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
+                                    toAdd.add(toManyEntity);
+                                }
+                            }
+                            callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
                         }
-                        callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
                     }
                 }
             }
