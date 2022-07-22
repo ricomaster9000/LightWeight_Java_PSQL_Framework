@@ -47,7 +47,7 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
                             BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
                         }
                         DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
-                        Object entityManyToOneReferenceIdVal = callReflectionMethod(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
+                        Object entityManyToOneReferenceIdVal = callReflectionMethodQuick(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
                         if(entityManyToOneReferenceIdVal == null) {
                             continue;
                         }

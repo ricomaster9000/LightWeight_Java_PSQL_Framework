@@ -143,10 +143,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
             for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                 if(dbEntityColumnToFieldToGetter.canBeUpdatedInDb() && !dbEntityColumnToFieldToGetter.isPrimaryKey()) {
                     try {
-                        callReflectionMethod(
+                        callReflectionMethodQuick(
                                 finalExistingEntity,
                                 dbEntityColumnToFieldToGetter.getSetterMethodName(),
-                                new Object[]{callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())},
+                                new Object[]{callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getGetterMethodName())},
                                 dbEntityColumnToFieldToGetter.getMethodParamTypes()
                         );
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -219,8 +219,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                         List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
                         for (BaseEntity relationEntity : toRelationEntities) {
-                            E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethod(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
-                            callReflectionMethod(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
+                            E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethodQuick(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
+                            callReflectionMethodQuick(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
                         }
                     }
                 }
@@ -313,7 +313,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                     try {
                         if(dbEntityColumnToFieldToGetter.hasSetter() && includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(dbEntityColumnToFieldToGetter)) {
-                            Object getterValue = callReflectionMethod(entityToInsert, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            Object getterValue = callReflectionMethodQuick(entityToInsert, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             toAppendValues.add((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -372,7 +372,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 for(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                     try {
                         if(includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(dbEntityColumnToFieldToGetter) && dbEntityColumnToFieldToGetter.canBeUpdatedInDb()) {
-                            Object getterValue = callReflectionMethod(entityToUpdate, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            Object getterValue = callReflectionMethodQuick(entityToUpdate, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
@@ -449,14 +449,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         List<BaseEntity> toAdd = new ArrayList<>();
                         if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
-                            callReflectionMethod(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntitiesInsertedOrUpdated.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
+                            callReflectionMethodQuick(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), new Object[]{relationToEntitiesInsertedOrUpdated.get(0).getId()}, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes());
                         } else {
                             for (BaseEntity toEntity : relationToEntitiesInsertedOrUpdated) {
-                                if (callReflectionMethod(toEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
+                                if (callReflectionMethodQuick(toEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()).equals(entity.getId())) {
                                     toAdd.add(toEntity);
                                 }
                             }
-                            callReflectionMethod(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
+                            callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{toAdd}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
                         }
                     }
                 }
