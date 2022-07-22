@@ -437,7 +437,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         }
                     }
-                    if(relationToEntitiesInsertedOrUpdated.isEmpty()) {
+                    if(isEmptyOrBlankCollection(relationToEntitiesInsertedOrUpdated)) {
                         continue;
                     }
                     BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
@@ -546,6 +546,20 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     return queryBase;
             }
         }
+    }
+
+    private boolean isEmptyOrBlankCollection(Collection<?> collection) {
+        boolean result = true;
+        if(collection.isEmpty()) {
+            return true;
+        }
+        for (Object obj: collection) {
+            if (obj != null) {
+                result = false;
+                break;
+            }
+        }
+        return result;
     }
 
 }
