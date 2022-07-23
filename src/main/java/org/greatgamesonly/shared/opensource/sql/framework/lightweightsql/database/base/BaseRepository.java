@@ -63,6 +63,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null);
     }
 
+    public Map<Long,E> getAllByMinAndMaxAndColumnNameAsMap(Object minId, Object maxId, String columnName) throws RepositoryException {
+        return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null).stream().collect(Collectors.toMap(BaseEntity::getId, entity -> entity));
+    }
+
     public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
         return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
@@ -165,18 +169,19 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
         Object entitiesToInsert = Array.newInstance(getDbEntityClass(),entities.size());
         Object entitiesToUpdate = Array.newInstance(getDbEntityClass(),entities.size());
+        entities = entities.stream().sorted(Comparator.comparingLong(BaseEntity::getId)).collect(Collectors.toList());
+        Map<Long,E> existingEntities = getAllByMinAndMaxAndColumnNameAsMap(entities.get(0).getId(),entities.get(entities.size()-1).getId(),"id");
+        Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
+        try {
+            dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
+        } catch (IntrospectionException e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR, e);
+        }
         for(int i = 0; i < entities.size(); i++) {
-            E existingEntity = entities.get(i).getId() != null ? getById(entities.get(i).getId()) : null;
+            E existingEntity = entities.get(i).getId() != null ? existingEntities.get(entities.get(i).getId()) : null;
             if (existingEntity == null) {
                 Array.set(entitiesToInsert, i, entities.get(i));
             } else {
-                Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
-                try {
-                    dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
-                } catch (IntrospectionException e) {
-                    throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR, e);
-                }
-
                 for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : dbEntityColumnToFieldToGetters) {
                     if (dbEntityColumnToFieldToGetter.canBeUpdatedInDb() && !dbEntityColumnToFieldToGetter.isPrimaryKey()) {
                         try {
@@ -313,7 +318,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
             for (int i = 0; i < entitiesToInsert.size(); i++) {
-                ((Object[]) toInsert)[i] = shallowMergeNonBaseObjectIntoNonBaseObjectQuick(entitiesToInsert.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+                Array.set(toInsert,i,entitiesToInsert.get(i));
             }
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
@@ -344,6 +349,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 .collect(Collectors.joining(","))
             );
             stringBuilder.append(") VALUES ");
+            int toInsertIterator = 0;
             for (E entityToInsert : entitiesToInsert) {
                 if(entityToInsert == null) {
                     continue;
@@ -366,6 +372,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 if (!entityToInsert.equals(entitiesToInsert[entitiesToInsert.length - 1])) {
                     stringBuilder.append(",");
                 }
+                toInsertIterator++;
             }
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
@@ -380,7 +387,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
             for (int i = 0; i < entitiesToUpdate.size(); i++) {
-                ((Object[]) toUpdate)[i] = shallowMergeNonBaseObjectIntoNonBaseObjectQuick(entitiesToUpdate.get(i), getDbEntityClass().getDeclaredConstructor().newInstance());
+                Array.set(toUpdate,i,entitiesToUpdate.get(i));
             }
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
