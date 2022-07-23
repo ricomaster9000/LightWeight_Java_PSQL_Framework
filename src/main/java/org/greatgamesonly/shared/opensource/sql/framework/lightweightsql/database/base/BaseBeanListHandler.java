@@ -27,9 +27,12 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
     private static final HashMap<Class<? extends BaseEntity>,HashMap<Long,Object>> manyToOneRelationValueHolder = new HashMap<>();
     private static final HashMap<Class<? extends BaseEntity>, Timestamp> manyToOneRelationCacheDateHolder = new HashMap<>();
 
-    public BaseBeanListHandler(Class<? extends E> type) throws IntrospectionException, IOException, InterruptedException {
+    public BaseBeanListHandler(Class<? extends E> type, int manyToOneCacheHours) throws IntrospectionException, IOException, InterruptedException {
         super(type, new BasicRowProcessor(new BeanProcessor(DbUtils.getColumnsToFieldsMap(type))));
+        this.manyToOneCacheHours = manyToOneCacheHours;
     }
+
+    private int manyToOneCacheHours;
 
     @Override
     public List<E> handle(ResultSet rs) throws SQLException {
@@ -64,7 +67,7 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
     private HashMap<Long,Object> getManyToOneRelationValueHolder(Class<? extends BaseEntity> linkedClassEntity) {
         HashMap<Long,Object> result = BaseBeanListHandler.manyToOneRelationValueHolder.get(linkedClassEntity);
         Timestamp timestamp = BaseBeanListHandler.manyToOneRelationCacheDateHolder.get(linkedClassEntity);
-        if(timestamp != null && timestamp.before(DbUtils.nowDbTimestamp(DbConnectionManager.getInMemoryCacheHoursForManyToOne()))) {
+        if(timestamp != null && timestamp.before(DbUtils.nowDbTimestamp(manyToOneCacheHours))) {
             BaseBeanListHandler.manyToOneRelationValueHolder.remove(linkedClassEntity);
             result = new HashMap<>();
         }

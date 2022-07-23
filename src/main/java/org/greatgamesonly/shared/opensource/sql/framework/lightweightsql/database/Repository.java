@@ -12,4 +12,5 @@ import java.lang.annotation.Target;
 public @interface Repository {
     public String key() default "";
     public Class<? extends BaseEntity> dbEntityClass();
+    public int manyToOneCacheHours() default 12;
 }
