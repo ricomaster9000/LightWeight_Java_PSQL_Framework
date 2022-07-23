@@ -26,6 +26,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private Class<E> dbEntityClass;
     private Class<E[]> dbEntityArrayClass;
 
+    private String dbEntityTableName;
+
+
+    private final static String COUNT_BY_COLUMN_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s;";
+    private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
+    private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
+    private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
+
     public BaseRepository() {}
 
     public Class<E> getDbEntityClass() {
@@ -46,17 +54,24 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return dbEntityArrayClass;
     }
 
+    public String getDbEntityTableName() {
+        if(dbEntityTableName == null) {
+            dbEntityTableName = getDbEntityClass().getAnnotation(Entity.class).tableName();
+        }
+        return dbEntityTableName;
+    }
+
     public Map<String, String> getDbConnectionDetails() {
         return DbConnectionManager.CONNECTION_DETAILS;
     }
 
     public E getById(Long id) throws RepositoryException {
-        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
+        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " + getDbEntityTableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
     public List<E> getAll() throws RepositoryException {
-        return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName());
+        return executeGetQuery(String.format(GET_ALL_QUERY_UNFORMATTED,getDbEntityTableName()));
     }
 
     public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName) throws RepositoryException {
@@ -68,33 +83,31 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
-        return executeGetQuery("SELECT * FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() +
+        return executeGetQuery("SELECT * FROM " + getDbEntityTableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
                 " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
                 ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
     public void deleteById(Long id) throws RepositoryException {
-        executeDeleteQuery("DELETE FROM " + getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
+        executeDeleteQuery("DELETE FROM " + getDbEntityTableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
     }
 
     public E getByColumnName(String columnName, Object columnValue) throws RepositoryException {
-        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
-                getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
-                returnPreparedValueForQuery(columnValue));
+        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
     public E getByColumnNameOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
-                getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
+                getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
     public E getByColumnNameOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
-                getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
+                getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(orderByColumn));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
@@ -103,9 +116,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
         try {
             long countTotal;
-            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) as total FROM " +
-                    getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
-                    returnPreparedValueForQuery(columnKey) + ";");
+            ResultSet resultSet = executeQueryRaw(String.format(COUNT_BY_COLUMN_QUERY_UNFORMATTED,
+                    getDbEntityTableName(),
+                    columnName,
+                    returnPreparedValueForQuery(columnKey))
+            );
             resultSet.next();
             countTotal = resultSet.getLong("total");
             resultSet.close();
@@ -118,10 +133,13 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
         try {
             long countTotal;
-            ResultSet resultSet = executeQueryRaw("SELECT COUNT(*) AS total FROM " +
-                    getDbEntityClass().getAnnotation(Entity.class).tableName() + " WHERE " + columnName + " = " +
-                    returnPreparedValueForQuery(columnKey) +
-                    " AND " + columnName2 + " = " + returnPreparedValueForQuery(columnKey2) + ";");
+            ResultSet resultSet = executeQueryRaw(String.format(
+                    COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED,
+                    getDbEntityTableName(),
+                    columnName,returnPreparedValueForQuery(columnKey),
+                    columnName2,
+                    returnPreparedValueForQuery(columnKey2))
+            );
             resultSet.next();
             countTotal = resultSet.getLong("total");
             resultSet.close();
@@ -344,7 +362,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             handleEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToInsert);
             // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
 
-            stringBuilder.append(String.format("INSERT INTO %s (", getDbEntityClass().getAnnotation(Entity.class).tableName()));
+            stringBuilder.append(String.format("INSERT INTO %s (", getDbEntityTableName()));
             stringBuilder.append(
                 dbEntityColumnToFieldToGetters.stream()
                 .filter(this::includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations)
@@ -416,7 +434,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
-            stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityClass().getAnnotation(Entity.class).tableName()));
+            stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityTableName()));
             for (BaseEntity entityToUpdate : entitiesToUpdate) {
                 if(entityToUpdate == null) {
                     continue;
@@ -460,7 +478,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
 
-            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityClass().getAnnotation(Entity.class).tableName(), primaryKeyColumnName));
+            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityTableName(), primaryKeyColumnName));
             stringBuilder.append(
                 Arrays.stream(entitiesToDelete)
                 .map(entity -> entity.getId().toString())
