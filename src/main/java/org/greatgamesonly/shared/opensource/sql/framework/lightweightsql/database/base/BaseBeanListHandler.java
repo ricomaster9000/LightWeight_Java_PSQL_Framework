@@ -7,6 +7,7 @@ import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 
 import java.beans.IntrospectionException;
@@ -27,12 +28,12 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
     private static final HashMap<Class<? extends BaseEntity>,HashMap<Long,Object>> manyToOneRelationValueHolder = new HashMap<>();
     private static final HashMap<Class<? extends BaseEntity>, Timestamp> manyToOneRelationCacheDateHolder = new HashMap<>();
 
-    public BaseBeanListHandler(Class<? extends E> type, int manyToOneCacheHours) throws IntrospectionException, IOException, InterruptedException {
-        super(type, new BasicRowProcessor(new BeanProcessor(DbUtils.getColumnsToFieldsMap(type))));
-        this.manyToOneCacheHours = manyToOneCacheHours;
-    }
+    private final Repository repositoryAnnotation;
 
-    private int manyToOneCacheHours;
+    public BaseBeanListHandler(Class<? extends E> type) throws IntrospectionException, IOException, InterruptedException {
+        super(type, new BasicRowProcessor(new BeanProcessor(DbUtils.getColumnsToFieldsMap(type))));
+        repositoryAnnotation = type.getAnnotation(Entity.class).repositoryClass().getAnnotation(Repository.class);
+    }
 
     @Override
     public List<E> handle(ResultSet rs) throws SQLException {
@@ -67,7 +68,7 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
     private HashMap<Long,Object> getManyToOneRelationValueHolder(Class<? extends BaseEntity> linkedClassEntity) {
         HashMap<Long,Object> result = BaseBeanListHandler.manyToOneRelationValueHolder.get(linkedClassEntity);
         Timestamp timestamp = BaseBeanListHandler.manyToOneRelationCacheDateHolder.get(linkedClassEntity);
-        if(timestamp != null && timestamp.before(DbUtils.nowDbTimestamp(manyToOneCacheHours))) {
+        if(timestamp != null && timestamp.before(DbUtils.nowDbTimestamp(repositoryAnnotation.manyToOneCacheHours()))) {
             BaseBeanListHandler.manyToOneRelationValueHolder.remove(linkedClassEntity);
             result = new HashMap<>();
         }

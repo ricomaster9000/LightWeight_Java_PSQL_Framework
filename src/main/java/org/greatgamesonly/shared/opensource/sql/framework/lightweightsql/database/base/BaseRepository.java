@@ -48,12 +48,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Repository getRepositoryAnnotation() {
-        if(dbEntityClass == null) {
-            if(this.getClass().isAnnotationPresent(Repository.class)) {
-                annotation = this.getClass().getAnnotation(Repository.class);
-            } else if(this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
-                annotation = getClassByName(this.getClass().getName().replaceAll("_Subclass","")).getAnnotation(Repository.class);
+        try {
+            if (dbEntityClass == null) {
+                if (this.getClass().isAnnotationPresent(Repository.class)) {
+                    annotation = this.getClass().getAnnotation(Repository.class);
+                } else if (this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
+                    annotation = getClassByName(this.getClass().getName().replaceAll("_Subclass", "")).getAnnotation(Repository.class);
+                }
             }
+        } catch (Exception e) {
+            throw new RuntimeException("unable to fetch details from Repository annotation for repository, make sure it was set, "+e.getMessage());
         }
         return annotation;
     }
@@ -570,7 +574,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
         try {
             if(queryHandler == null) {
-                queryHandler = new BaseBeanListHandler<>(getDbEntityClass(), getRepositoryAnnotation().manyToOneCacheHours());
+                queryHandler = new BaseBeanListHandler<>(getDbEntityClass());
             }
         } catch (IntrospectionException | IOException | InterruptedException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_CLASS__ERROR, e);
