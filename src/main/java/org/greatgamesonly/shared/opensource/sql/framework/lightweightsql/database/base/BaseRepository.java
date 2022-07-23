@@ -170,7 +170,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
         Object entitiesToInsert = Array.newInstance(getDbEntityClass(),entities.size());
         Object entitiesToUpdate = Array.newInstance(getDbEntityClass(),entities.size());
         List<E> sortedEntitiesWithIds = entities.stream().filter(entity -> entity.getId() != null).sorted(Comparator.comparingLong(BaseEntity::getId)).collect(Collectors.toList());
-        Map<Long,E> existingEntities = getAllByMinAndMaxAndColumnNameAsMap(sortedEntitiesWithIds.get(0).getId(),sortedEntitiesWithIds.get(entities.size()-1).getId(),"id");
+        Map<Long, E> existingEntities = new HashMap<>();
+        if(!sortedEntitiesWithIds.isEmpty()) {
+            existingEntities = getAllByMinAndMaxAndColumnNameAsMap(sortedEntitiesWithIds.get(0).getId(), sortedEntitiesWithIds.get(entities.size() - 1).getId(), "id");
+        }
         Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
         try {
             dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
