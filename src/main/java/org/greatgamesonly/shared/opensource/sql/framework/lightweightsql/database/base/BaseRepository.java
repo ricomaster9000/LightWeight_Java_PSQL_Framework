@@ -28,6 +28,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private String dbEntityTableName;
 
+    private Repository annotation;
+
+    private BaseBeanListHandler<E> queryHandler;
+
 
     private final static String COUNT_BY_COLUMN_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
@@ -38,13 +42,20 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public Class<E> getDbEntityClass() {
         if(dbEntityClass == null) {
-            if(this.getClass().isAnnotationPresent(Repository.class)) {
-                dbEntityClass = (Class<E>) this.getClass().getAnnotation(Repository.class).dbEntityClass();
-            } else if(this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
-                dbEntityClass = (Class<E>) getClassByName(this.getClass().getName().replaceAll("_Subclass","")).getAnnotation(Repository.class).dbEntityClass();
-            }
+            dbEntityClass = (Class<E>) getRepositoryAnnotation().dbEntityClass();
         }
         return dbEntityClass;
+    }
+
+    public Repository getRepositoryAnnotation() {
+        if(dbEntityClass == null) {
+            if(this.getClass().isAnnotationPresent(Repository.class)) {
+                annotation = this.getClass().getAnnotation(Repository.class);
+            } else if(this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
+                annotation = getClassByName(this.getClass().getName().replaceAll("_Subclass","")).getAnnotation(Repository.class);
+            }
+        }
+        return annotation;
     }
 
     public Class<E[]> getDbEntityArrayClass() {
@@ -558,10 +569,13 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
         try {
-            return new BaseBeanListHandler<>(getDbEntityClass());
+            if(queryHandler == null) {
+                queryHandler = new BaseBeanListHandler<>(getDbEntityClass(), getRepositoryAnnotation().manyToOneCacheHours());
+            }
         } catch (IntrospectionException | IOException | InterruptedException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_CLASS__ERROR, e);
         }
+        return queryHandler;
     }
 
     protected QueryRunner getRunner() {
