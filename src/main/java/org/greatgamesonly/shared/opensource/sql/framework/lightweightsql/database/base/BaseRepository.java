@@ -682,7 +682,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             switch(this) {
                 case DESC:
                 case ASC:
-                    return String.format(" ORDER BY %s %S", relevantFieldName, queryBase);
+                    return String.format(" ORDER BY %s %s", relevantFieldName, queryBase);
                 default:
                     return queryBase;
             }
