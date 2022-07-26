@@ -37,6 +37,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
     private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
+    private final static String GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s";
+    private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s";
+    private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s ORDER BY %s";
+    private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s ORDER BY %s";
 
     public BaseRepository() {}
 
@@ -110,6 +114,44 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public E getByColumnName(String columnName, Object columnValue) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getByColumnGreaterAs(String columnName, Timestamp columnValueGreaterAs) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED,
+            getDbEntityTableName(),
+            columnName,
+            returnPreparedValueForQuery(columnValueGreaterAs)
+        ));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getByColumnLesserAs(String columnName, Timestamp columnValueLesserAs) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                columnName,
+                returnPreparedValueForQuery(columnValueLesserAs)
+        ));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getByColumnGreaterAsOrderByColumn(String columnName, Timestamp columnValueGreaterAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                columnName,
+                returnPreparedValueForQuery(columnValueGreaterAs),
+                orderBy.getQueryEquivalent(columnNameOrderBy)
+        ));
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getByColumnLesserAsOrderByColumn(String columnName, Timestamp columnValueLesserAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
+        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                columnName,
+                returnPreparedValueForQuery(columnValueLesserAs),
+                orderBy.getQueryEquivalent(columnNameOrderBy)
+        ));
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
@@ -640,7 +682,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             switch(this) {
                 case DESC:
                 case ASC:
-                    return " ORDER BY " + relevantFieldName + " " + queryBase;
+                    return String.format(" ORDER BY %s %S", relevantFieldName, queryBase);
                 default:
                     return queryBase;
             }
