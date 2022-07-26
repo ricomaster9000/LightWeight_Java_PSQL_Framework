@@ -38,6 +38,8 @@ public class DbEntityColumnToFieldToGetter {
 
     private Class<?>[] methodParamTypes;
 
+    private boolean insertOrUpdateRelationInDbInteractions = false;
+
     public String getDbColumnName() {
         return dbColumnName;
     }
@@ -201,5 +203,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setMethodParamTypes(Class<?>... methodParamTypes) {
         this.methodParamTypes = methodParamTypes;
+    }
+
+    public boolean isInsertOrUpdateRelationInDbInteractions() {
+        return insertOrUpdateRelationInDbInteractions;
+    }
+
+    public void setInsertOrUpdateRelationInDbInteractions(boolean insertOrUpdateRelationInDbInteractions) {
+        this.insertOrUpdateRelationInDbInteractions = insertOrUpdateRelationInDbInteractions;
     }
 }

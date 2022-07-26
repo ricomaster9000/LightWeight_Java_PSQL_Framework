@@ -520,20 +520,26 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         if(entity == null) {
                             continue;
                         }
-                        // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
-                        if (dbEntityColumnToFieldToGetter.isForManyToOneRelation() || dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
-                            relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                        if(dbEntityColumnToFieldToGetter.isForManyToOneRelation() && !dbEntityColumnToFieldToGetter.isInsertOrUpdateRelationInDbInteractions() && entity.getId() == null) {
+                            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
                         } else {
-                            relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
+                            if (dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
+                                relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            } else {
+                                relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            }
                         }
                     }
                     if(isEmptyOrBlankCollection(relationToEntitiesInsertedOrUpdated)) {
                         continue;
                     }
                     BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                    insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() == null).collect(Collectors.toList()));
-                    updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() != null).collect(Collectors.toList()));
-                    relationToEntitiesInsertedOrUpdated = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
+                    if(dbEntityColumnToFieldToGetter.isInsertOrUpdateRelationInDbInteractions()) {
+                        insertEntities = toEntityRepo.insertEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() == null).collect(Collectors.toList()));
+                        updateEntities = toEntityRepo.updateEntitiesListGeneric(relationToEntitiesInsertedOrUpdated.stream().filter(toManyEntity -> toManyEntity != null && toManyEntity.getId() != null).collect(Collectors.toList()));
+                        relationToEntitiesInsertedOrUpdated = Stream.concat(insertEntities.stream(), updateEntities.stream()).collect(Collectors.toList());
+                    }
                     relationToEntities = Stream.concat(relationToEntities.stream(), relationToEntitiesInsertedOrUpdated.stream()).collect(Collectors.toList());
                     for (E entity : entitiesParam) {
                         List<BaseEntity> toAdd = new ArrayList<>();

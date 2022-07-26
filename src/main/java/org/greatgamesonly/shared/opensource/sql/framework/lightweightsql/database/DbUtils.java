@@ -70,6 +70,7 @@ public class DbUtils {
                         .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(field.getAnnotation(OneToMany.class).addToWherePartInGetQuery());
+                    dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
                 }
                 if(field.isAnnotationPresent(OneToOne.class)) {
                     if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
@@ -83,6 +84,7 @@ public class DbUtils {
                             .findFirst().orElseThrow(() -> new IntrospectionException("OneToOne annotation can only be applied to BaseEntity value type"))
                             .getGetterMethodName()
                     );
+                    dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
                 }
                 if(field.isAnnotationPresent(ManyToOne.class)) {
                     if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
@@ -91,6 +93,7 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setForManyToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedDbColumnName(field.getAnnotation(ManyToOne.class).linkedDbColumnName());
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(ManyToOne.class).linkedEntityClass());
+                    dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(field.getAnnotation(ManyToOne.class).insertOrUpdateRelationInDbInteractions());
                 }
                 if(field.isAnnotationPresent(ManyToOneReferenceId.class)) {
                     dbEntityColumnToFieldToGetter.setForManyToOneReferenceId(true);

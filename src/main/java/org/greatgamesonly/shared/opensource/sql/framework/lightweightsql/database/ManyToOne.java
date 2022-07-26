@@ -15,4 +15,6 @@ public @interface ManyToOne {
     public String linkedDbColumnName();
 
     public Class<? extends BaseEntity> linkedEntityClass();
+
+    public boolean insertOrUpdateRelationInDbInteractions() default false;
 }
