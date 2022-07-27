@@ -411,10 +411,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     @SafeVarargs
     public final List<E> insertEntities(E... entitiesToInsert) throws RepositoryException {
+        return insertEntities(Arrays.stream(entitiesToInsert).collect(Collectors.toList()));
+    }
+
+    public final List<E> insertEntities(List<E> entitiesToInsert) throws RepositoryException {
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         try {
-            if(entitiesToInsert == null || entitiesToInsert.length <= 0) {
+            if(entitiesToInsert == null || entitiesToInsert.size() <= 0) {
                 return new ArrayList<>();
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
@@ -452,7 +456,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
                 stringBuilder.append(String.join(",",toAppendValues));
                 stringBuilder.append(")");
-                if (!entityToInsert.equals(entitiesToInsert[entitiesToInsert.length - 1])) {
+                if (!entityToInsert.equals(entitiesToInsert.get(entitiesToInsert.size() - 1))) {
                     stringBuilder.append(",");
                 }
                 toInsertIterator++;
@@ -480,11 +484,15 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     @SafeVarargs
     public final List<E> updateEntities(E... entitiesToUpdate) throws RepositoryException {
+        return updateEntities(Arrays.stream(entitiesToUpdate).collect(Collectors.toList()));
+    }
+
+    public final List<E> updateEntities(List<E> entitiesToUpdate) throws RepositoryException {
         List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         try {
-            if(entitiesToUpdate == null || entitiesToUpdate.length <= 0) {
+            if(entitiesToUpdate == null || entitiesToUpdate.size() <= 0) {
                 return new ArrayList<>();
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
@@ -517,7 +525,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     }
                 }
                 stringBuilder.append(String.join(",",toAppendValues));
-                if (!entityToUpdate.equals(entitiesToUpdate[entitiesToUpdate.length - 1])) {
+                if (!entityToUpdate.equals(entitiesToUpdate.get(entitiesToUpdate.size() - 1))) {
                     stringBuilder.append(",");
                 } else {
                     stringBuilder.append(String.format(" WHERE %s = %d", primaryKeyColumnName, entityToUpdate.getId()));
@@ -532,9 +540,13 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     @SafeVarargs
     public final void deleteEntities(E... entitiesToDelete) throws RepositoryException {
+        deleteEntities(Arrays.stream(entitiesToDelete).collect(Collectors.toList()));
+    }
+
+    public final void deleteEntities(List<E> entitiesToDelete) throws RepositoryException {
         StringBuilder stringBuilder = new StringBuilder();
         try {
-            if(entitiesToDelete == null || entitiesToDelete.length <= 0) {
+            if(entitiesToDelete == null || entitiesToDelete.size() <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
@@ -542,7 +554,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
             stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityTableName(), primaryKeyColumnName));
             stringBuilder.append(
-                Arrays.stream(entitiesToDelete)
+                entitiesToDelete.stream()
                 .map(entity -> entity.getId().toString())
                 .collect(Collectors.joining(","))
             );
@@ -553,8 +565,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
     }
 
-    @SafeVarargs
-    private List<?> handleEntityRelationshipInsertsOrUpdates(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, E... entitiesParam) throws RepositoryException {
+    private List<?> handleEntityRelationshipInsertsOrUpdates(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, List<E> entitiesParam) throws RepositoryException {
         List<?> relationToEntities = new ArrayList<BaseEntity>();
         try {
             // Handle Relational db inserts or updates
