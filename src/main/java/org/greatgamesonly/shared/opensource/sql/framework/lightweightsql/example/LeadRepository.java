@@ -28,11 +28,11 @@ class LeadRepository extends BaseRepository<Lead> {
     }
 
     public Lead getByPhoneNumber(String phoneNumber) throws RepositoryException {
-        return super.getByColumnName("phone_number", phoneNumber);
+        return super.getSingleEntityByColumnName("phone_number", phoneNumber);
     }
 
     public Lead getByPhoneNumberOldestFirst(String phoneNumber) throws RepositoryException {
-        return super.getByColumnNameOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
+        return super.getSingleEntityByColumnNameOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
     }
 
     public List<Lead> getAllAfterCreateDateRawQuery(java.sql.Timestamp afterThisDate) throws RepositoryException, SQLException {
