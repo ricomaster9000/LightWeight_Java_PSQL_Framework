@@ -67,7 +67,7 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
         return entities;
     }
 
-    private final HashMap<Long,Object> getAndSetToOneEntities(Class<? extends BaseEntity> linkedClassEntity, final HashMap<Long,Object> toOneEntities) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, RepositoryException {
+    private void getAndSetToOneEntities(Class<? extends BaseEntity> linkedClassEntity, final HashMap<Long,Object> toOneEntities) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, RepositoryException {
         BaseRepository<? extends BaseEntity> toOneRepo = linkedClassEntity.getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
         toOneRepo.getAll().forEach(toOneEntity -> toOneEntities.put(toOneEntity.getId(),toOneEntity));
         BaseBeanListHandler.manyToOneRelationValueHolder.put(linkedClassEntity, toOneEntities);
