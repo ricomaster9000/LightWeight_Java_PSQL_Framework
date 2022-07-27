@@ -37,10 +37,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
     private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
+    private final static String GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED = "SELECT * FROM %s%s";
     private final static String GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s";
     private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s";
-    private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s ORDER BY %s";
-    private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s ORDER BY %s";
+    private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s%s";
+    private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
 
     public BaseRepository() {}
 
@@ -91,6 +92,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public List<E> getAll() throws RepositoryException {
         return executeGetQuery(String.format(GET_ALL_QUERY_UNFORMATTED,getDbEntityTableName()));
+    }
+
+    public List<E> getAllOrderByColumn(String orderByColumnName, OrderBy orderBy) throws RepositoryException {
+        return executeGetQuery(String.format(GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),orderBy.getQueryEquivalent(orderByColumnName)));
     }
 
     public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName) throws RepositoryException {
