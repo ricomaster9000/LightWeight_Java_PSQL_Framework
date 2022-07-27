@@ -41,21 +41,23 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
         for(E entity : entities) {
             try {
                 List<DbEntityColumnToFieldToGetter> manyToOneRelationFieldToGetters = getManyToOneRelationFieldToGetters(entity.getClass());
-                if(!manyToOneRelationFieldToGetters.isEmpty()) {
+                if (!manyToOneRelationFieldToGetters.isEmpty()) {
                     for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : manyToOneRelationFieldToGetters) {
-                        final HashMap<Long,Object> toOneEntities = getManyToOneRelationValueHolder(dbEntityColumnToFieldToGetter.getLinkedClassEntity());
-                        if(toOneEntities.isEmpty()) {
-                            BaseRepository<? extends BaseEntity> toOneRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                            toOneRepo.getAll().forEach(toOneEntity -> toOneEntities.put(toOneEntity.getId(),toOneEntity));
-                            BaseBeanListHandler.manyToOneRelationValueHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
-                            BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
+                        final HashMap<Long, Object> toOneEntities = getManyToOneRelationValueHolder(dbEntityColumnToFieldToGetter.getLinkedClassEntity());
+                        if (toOneEntities.isEmpty()) {
+                            getAndSetToOneEntities(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
                         }
                         DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
-                        Object entityManyToOneReferenceIdVal = callReflectionMethodQuick(entity,manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
-                        if(entityManyToOneReferenceIdVal == null) {
+                        Object entityManyToOneReferenceIdVal = callReflectionMethodQuick(entity, manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
+                        if (entityManyToOneReferenceIdVal == null) {
                             continue;
                         }
-                        callReflectionMethodQuick(entity,dbEntityColumnToFieldToGetter.getSetterMethodName(),toOneEntities.get((Long) entityManyToOneReferenceIdVal),dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                        try {
+                            callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toOneEntities.get((Long) entityManyToOneReferenceIdVal), dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                        } catch (IllegalArgumentException e) {
+                            getAndSetToOneEntities(dbEntityColumnToFieldToGetter.getLinkedClassEntity(),toOneEntities);
+                            callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toOneEntities.get((Long) entityManyToOneReferenceIdVal), dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                        }
                     }
                 }
             } catch (RepositoryException | IntrospectionException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -63,6 +65,13 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
             }
         }
         return entities;
+    }
+
+    private final HashMap<Long,Object> getAndSetToOneEntities(Class<? extends BaseEntity> linkedClassEntity, final HashMap<Long,Object> toOneEntities) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, RepositoryException {
+        BaseRepository<? extends BaseEntity> toOneRepo = linkedClassEntity.getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+        toOneRepo.getAll().forEach(toOneEntity -> toOneEntities.put(toOneEntity.getId(),toOneEntity));
+        BaseBeanListHandler.manyToOneRelationValueHolder.put(linkedClassEntity, toOneEntities);
+        BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(linkedClassEntity, DbUtils.nowDbTimestamp());
     }
 
     private HashMap<Long,Object> getManyToOneRelationValueHolder(Class<? extends BaseEntity> linkedClassEntity) {
