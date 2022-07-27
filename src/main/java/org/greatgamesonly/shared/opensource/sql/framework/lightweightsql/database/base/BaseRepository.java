@@ -590,13 +590,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         }
                         if(dbEntityColumnToFieldToGetter.isForManyToOneRelation() && !dbEntityColumnToFieldToGetter.isInsertOrUpdateRelationInDbInteractions() && entity.getId() == null) {
                             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
+                        }
+                        // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
+                        if (dbEntityColumnToFieldToGetter.isForOneToOneRelation() || dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
+                            relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         } else {
-                            // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
-                            if (dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
-                                relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
-                            } else {
-                                relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
-                            }
+                            relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         }
                     }
                     if(isEmptyOrBlankCollection(relationToEntitiesInsertedOrUpdated)) {
