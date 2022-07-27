@@ -22,7 +22,7 @@ import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.
 
 public abstract class BaseRepository<E extends BaseEntity> {
 
-    private static Connection connection;
+    private Connection connection;
     private Class<E> dbEntityClass;
     private Class<E[]> dbEntityArrayClass;
 
