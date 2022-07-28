@@ -13,7 +13,7 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102", "Error inserting entity into database",
             500);
-    public static final RepositoryError REPOSITORY_PREPARE_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102b", "Error preparing insert entity into database",
+    public static final RepositoryError REPOSITORY_PREPARE_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102b", "Error preparing insert-entity-query-and-related-info",
             500);
     public static final RepositoryError REPOSITORY_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102c", "Error inserting entity into database because inserted data violates a unique db constraint",
             500);
@@ -30,6 +30,8 @@ public class RepositoryError extends CustomError {
     public static final RepositoryError REPOSITORY_CALL_REFLECTION_METHOD__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00108", "Error calling method via reflection",
             500);
     public static final RepositoryError REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00109", "Error inserting or updating all sub relational entities linked to main entities to insert or update",
+            500);
+    public static final RepositoryError REPOSITORY_PREPARE_UPDATE__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00110", "Error preparing update-entity-query-and-related-info",
             500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {

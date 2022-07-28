@@ -1,6 +1,5 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
 
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
@@ -12,7 +11,10 @@ import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.*;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,7 +64,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
             }
         } catch (Exception e) {
-            throw new RuntimeException("unable to fetch details from Repository annotation for repository, make sure it was set, "+e.getMessage());
+            throw new RuntimeException("unable to fetch details from Repository annotation for repository, make sure it was set with correct info, "+e.getMessage());
         }
         return annotation;
     }
@@ -268,7 +270,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         try {
             dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
         } catch (IntrospectionException e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY_WITH_ENTITY__ERROR, e);
+            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e);
         }
         for(int i = 0; i < entities.size(); i++) {
             E existingEntity = entities.get(i).getId() != null ? existingEntities.get(entities.get(i).getId()) : null;
@@ -370,12 +372,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             throw e;
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
-        } finally {
-            try {
-                DbUtils.close(getConnection());
-            } catch (SQLException e) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e);
-            }
         }
         return entityList;
     }
@@ -391,15 +387,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
         } catch (SQLException e) {
             System.err.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage());
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
+            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL_SQL__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e.getMessage() + " non sql error", e);
-        } finally {
-            try {
-                DbUtils.close(getConnection());
-            } catch (SQLException e) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_GET__ERROR, e);
-            }
+            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
         }
         return entityList;
     }
@@ -414,7 +404,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 Array.set(toInsert,i,entitiesToInsert.get(i));
             }
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
+            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e.getMessage());
         }
         return insertEntities(getDbEntityArrayClass().cast(toInsert));
     }
@@ -487,7 +477,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 Array.set(toUpdate,i,entitiesToUpdate.get(i));
             }
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, e.getMessage());
+            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_UPDATE__ERROR, e.getMessage());
         }
         return updateEntities(getDbEntityArrayClass().cast(toUpdate));
     }

@@ -26,7 +26,15 @@ class ConnectionPoolManager {
                     new TimerTask() {
                         @Override
                         public void run() {
-                            connectionPool.removeIf((connectionPool) -> connectionPool.getTimeConnectionOpened().after(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection()));
+                            connectionPool.removeIf((connectionPool) -> {
+                                boolean mustCloseAndRemove = connectionPool.getTimeConnectionOpened().after(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection());
+                                if(mustCloseAndRemove) {
+                                    try {
+                                        org.apache.commons.dbutils.DbUtils.close(connectionPool.getConnection());
+                                    } catch (SQLException ignored) {}
+                                }
+                                return mustCloseAndRemove;
+                            });
                             try {
                                 setConnectionPool(connectionDetails);
                             } catch (SQLException e) {
