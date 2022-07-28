@@ -5,11 +5,11 @@ import java.util.Map;
 
 public class DbConnectionManager {
 
-    protected static Map<String, String> CONNECTION_DETAILS = new HashMap<>();
+    protected static HashMap<String, String> CONNECTION_DETAILS = new HashMap<>();
     static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 50;
 
     public static void setDbConnectionDetails(Map<String, String> connectionDetails) {
-        CONNECTION_DETAILS = connectionDetails;
+        CONNECTION_DETAILS = new HashMap<>(connectionDetails);
         if(connectionDetails.get("DB_CONNECTION_POOL_SIZE") == null) {
             CONNECTION_DETAILS.put("DB_CONNECTION_POOL_SIZE", String.valueOf(DEFAULT_DB_CONNECTION_POOL_SIZE));
         }
