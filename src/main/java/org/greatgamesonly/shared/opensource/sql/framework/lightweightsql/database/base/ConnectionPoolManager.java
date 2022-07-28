@@ -21,6 +21,11 @@ class ConnectionPoolManager {
 
     static Timer startManager(Map<String, String> connectionDetails) {
         if(managerTimer == null) {
+            try {
+                setConnectionPool(connectionDetails);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
             Timer timer = new Timer();
             timer.schedule(
                     new TimerTask() {
