@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.ConnectionPoolManager.connectionPoolInUseStatuses;
 
 public abstract class BaseRepository<E extends BaseEntity> {
     private Class<E> dbEntityClass;
@@ -311,15 +312,17 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
         List<E> entityList = new ArrayList<>();
+        PooledConnection pooledConnection = null;
         try {
+            pooledConnection = getConnection();
             if(queryType.equals(QueryType.INSERT)) {
-                    entityList = getRunner().insert(getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.UPDATE)) {
-                    entityList = getRunner().execute(getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
+                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
             } else if(queryType.equals(QueryType.DELETE)) {
-                getRunner().execute(getConnection(), queryToRun, getQueryResultHandler());
+                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
             } else if(queryType.equals(QueryType.GET)) {
-                entityList = getRunner().query(getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+                entityList = getRunner().query(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             }
             if(queryType.equals(QueryType.GET)) {
                 if(relationFieldToGetters == null) {
@@ -368,14 +371,20 @@ public abstract class BaseRepository<E extends BaseEntity> {
             throw e;
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
+        } finally {
+            if(pooledConnection != null) {
+                connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(), false);
+            }
         }
         return entityList;
     }
 
     protected ResultSet executeQueryRaw(String queryToRun) throws RepositoryException {
         ResultSet entityList = null;
+        PooledConnection pooledConnection = null;
         try {
-            CallableStatement callStatement = getConnection().prepareCall(queryToRun);
+            pooledConnection = getConnection();
+            CallableStatement callStatement = pooledConnection.getConnection().prepareCall(queryToRun);
             if(queryToRun.startsWith("SELECT")) {
                 entityList = callStatement.executeQuery();
             } else {
@@ -386,6 +395,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
             throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL_SQL__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
         } catch (Exception e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
+        } finally {
+            if(pooledConnection != null) {
+                connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(), false);
+            }
         }
         return entityList;
     }
@@ -621,7 +634,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return relationToEntities;
     }
 
-    protected Connection getConnection() throws SQLException {
+    protected PooledConnection getConnection() throws SQLException {
         return ConnectionPoolManager.getConnection();
     }
 

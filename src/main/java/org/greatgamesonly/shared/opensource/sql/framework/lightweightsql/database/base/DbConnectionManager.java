@@ -1,7 +1,6 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class DbConnectionManager {
@@ -16,9 +15,13 @@ public class DbConnectionManager {
             CONNECTION_DETAILS.put("DatabaseUrl", getDatabaseUrl());
             CONNECTION_DETAILS.put("User", getDatabaseUsername());
             CONNECTION_DETAILS.put("Password", getDatabasePassword());
-            CONNECTION_DETAILS.put("DB_CONNECTION_POOL_SIZE", getDatabaseMaxDbConnectionPool());
+            CONNECTION_DETAILS.put("DB_CONNECTION_POOL_SIZE", getDatabaseMaxDbConnectionPoolProperty());
         }
         return CONNECTION_DETAILS;
+    }
+
+    public static Integer getDatabaseMaxDbConnectionPool() {
+        return Integer.parseInt(getDbConnectionDetails().get("DB_CONNECTION_POOL_SIZE"));
     }
 
     protected static String getConfigurationProperty(String keyName) {
@@ -62,7 +65,7 @@ public class DbConnectionManager {
         return result;
     }
 
-    protected static String getDatabaseMaxDbConnectionPool() {
+    protected static String getDatabaseMaxDbConnectionPoolProperty() {
         String result = getConfigurationProperty("DB_CONNECTION_POOL_SIZE");
         if(result == null || result.isBlank()) {
             result = String.valueOf(DEFAULT_DB_CONNECTION_POOL_SIZE);
