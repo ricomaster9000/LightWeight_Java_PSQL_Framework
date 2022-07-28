@@ -7,12 +7,4 @@ import java.util.Map;
 
 
 @Repository(dbEntityClass = LeadQuote.class)
-class LeadQuoteRepository extends BaseRepository<LeadQuote> {
-
-    @Override
-    public Map<String, String> getDbConnectionDetails() {
-        return Map.of("DatabaseUrl", "testDbName",
-                "User", "TestUser",
-                "Password", "TestPassword");
-    }
-}
+class LeadQuoteRepository extends BaseRepository<LeadQuote> {}

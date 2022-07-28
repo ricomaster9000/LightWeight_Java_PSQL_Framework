@@ -7,12 +7,4 @@ import java.util.Map;
 
 
 @Repository(dbEntityClass = StatusType.class, manyToOneCacheHours = 6/*default is 12*/)
-class StatusTypeRepository extends BaseRepository<StatusType> {
-
-    @Override
-    public Map<String, String> getDbConnectionDetails() {
-        return Map.of("DatabaseUrl", "testDbName",
-                "User", "TestUser",
-                "Password", "TestPassword");
-    }
-}
+class StatusTypeRepository extends BaseRepository<StatusType> {}
