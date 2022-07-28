@@ -12,6 +12,8 @@ import java.lang.annotation.Target;
 public @interface OneToOne {
     public String key() default "";
 
+    public String referenceFromColumnName();
+
     public String referenceToColumnName();
 
     public Class<? extends BaseEntity> toOneEntityClass();

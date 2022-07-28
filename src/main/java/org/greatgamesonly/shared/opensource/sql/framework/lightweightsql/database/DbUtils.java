@@ -7,7 +7,6 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 
@@ -78,10 +77,11 @@ public class DbUtils {
                     }
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
+                    dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOne.class).referenceFromColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOne.class).referenceToColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(field.getType()).stream()
                             .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).referenceToColumnName()))
-                            .findFirst().orElseThrow(() -> new IntrospectionException("OneToOne annotation can only be applied to BaseEntity value type"))
+                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship from %s must connect to a valid field in the %s",entityClass,field.getType())))
                             .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
@@ -126,6 +126,13 @@ public class DbUtils {
                 if(field.isAnnotationPresent(PrimaryKey.class)) {
                     dbEntityColumnToFieldToGetter.setIsPrimaryKey(true);
                     dbEntityColumnToFieldToGetter.setPrimaryKeyName(field.getName());
+                }
+                if(dbEntityColumnToFieldToGetter.getSetterMethodName() == null || dbEntityColumnToFieldToGetter.getGetterMethodName() == null) {
+                    throw new IllegalArgumentException(
+                            String.format("getter and setter methods could not be determined for field %s for class %s, please check if standard getter and setter methods exist for this field",
+                                field.getName(),
+                                entityClass
+                            ));
                 }
                 inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()).put(field.getName(),dbEntityColumnToFieldToGetter);
             }
