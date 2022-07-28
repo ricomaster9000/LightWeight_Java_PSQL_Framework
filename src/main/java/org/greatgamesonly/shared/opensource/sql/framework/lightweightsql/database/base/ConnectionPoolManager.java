@@ -7,9 +7,13 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionManager.getDatabaseMaxDbConnectionPool;
+
 class ConnectionPoolManager {
 
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
+
+    static final HashMap<String, Boolean> connectionPoolInUseStatuses = new HashMap<>();
 
     private static final int connectionOpenHours = 1;
 
@@ -28,12 +32,17 @@ class ConnectionPoolManager {
                         @Override
                         public void run() {
                             connectionPool.removeIf((connectionPool) -> {
-                                boolean mustCloseAndRemove = connectionPool.getTimeConnectionOpened().after(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection());
+                                boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connectionPool.getUniqueReference()) && (connectionPool.getTimeConnectionOpened().before(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection()));
                                 if(mustCloseAndRemove) {
                                     try {
                                         org.apache.commons.dbutils.DbUtils.close(connectionPool.getConnection());
-                                    } catch (SQLException ignored) {}
+                                    } catch (SQLException ignored) {
+                                        System.out.println("lightweightsql - ConnectionPoolManager -> unable to close a db connection properly");
+                                    }
                                 }
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException ignored) {}
                                 return mustCloseAndRemove;
                             });
                             try {
@@ -43,7 +52,7 @@ class ConnectionPoolManager {
                             }
                         }
                     },
-                    10 * 60 * 1000
+                    15 * 60 * 1000
             );
             managerTimer = timer;
         }
@@ -56,7 +65,7 @@ class ConnectionPoolManager {
 
     static void setConnectionPool(Map<String, String> connectionDetails) throws SQLException {
         if(connectionPool.isEmpty() || connectionPool.size() < 10) {
-            int maxConnectionsToOpen = Integer.parseInt(connectionDetails.get("DB_CONNECTION_POOL_SIZE")) - connectionPool.size();
+            int maxConnectionsToOpen = getDatabaseMaxDbConnectionPool() - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
                         DbConnectionManager.getDbConnectionDetails().get("DatabaseUrl"),
@@ -64,18 +73,21 @@ class ConnectionPoolManager {
                         DbConnectionManager.getDbConnectionDetails().get("Password")
                 );
                 connection.setAutoCommit(true);
-                connectionPool.add(new PooledConnection(connection, DbUtils.nowDbTimestampPlusMinutes(maxConnectionsToOpen*5)));
+                String uniqueReference = UUID.randomUUID().toString();
+                connectionPool.add(new PooledConnection(connection, DbUtils.nowDbTimestamp(),uniqueReference));
+                connectionPoolInUseStatuses.put(uniqueReference,false);
                 maxConnectionsToOpen--;
             }
         }
     }
 
-    static Connection getConnection() {
-        return getConnectionPool().stream()
-            .filter(pooledConnection -> isDbConnected(pooledConnection.getConnection()))
+    static PooledConnection getConnection() {
+        PooledConnection pooledConnection = getConnectionPool().stream()
+            .filter(pooledCon -> isDbConnected(pooledCon.getConnection()))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("no pooled db connection could be fetched for use"))
-            .getConnection();
+            .orElseThrow(() -> new RuntimeException("no pooled db connection could be fetched for use"));
+        connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(),true);
+        return pooledConnection;
     }
 
     private static boolean isDbConnected(Connection con) {
