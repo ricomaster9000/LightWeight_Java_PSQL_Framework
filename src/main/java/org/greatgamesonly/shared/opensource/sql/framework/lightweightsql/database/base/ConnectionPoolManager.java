@@ -49,6 +49,9 @@ class ConnectionPoolManager {
                                 int averageActiveConnectionsInPast = new Double(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
                                         .average().getAsDouble())+1D).intValue();
                                 currentDbConnectionPoolSize = averageActiveConnectionsInPast+1;
+                                if(currentDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
+                                    currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
+                                }
                                 totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
                             }
                             connectionPool.removeIf((connectionPool) -> {
