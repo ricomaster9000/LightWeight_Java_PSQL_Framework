@@ -83,7 +83,7 @@ class ConnectionPoolManager {
                             timesManagerTimerRan++;
                         }
                     },
-                    managerTimerIntervalSeconds * 1000L
+                    managerTimerIntervalSeconds * 1000L, managerTimerIntervalSeconds * 1000L
             );
             managerTimer = timer;
         }
@@ -99,7 +99,7 @@ class ConnectionPoolManager {
                             System.out.println("ran timer test2");
                         }
                     },
-                    1000L
+                    1000L, 1000L
             );
             dbConnectionPoolMonitorTimer = timer;
         }
