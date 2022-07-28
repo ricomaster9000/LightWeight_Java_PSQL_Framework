@@ -47,7 +47,7 @@ class ConnectionPoolManager {
                             if(timesManagerTimerRan >= timesManagerTimerMustRunBeforePoolSizeReAdjustment) {
                                 timesManagerTimerRan = 0;
                                 int averageActiveConnectionsInPast = new Double(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
-                                        .average().getAsDouble())+1D).intValue();
+                                        .average().orElse(1D))+1D).intValue();
                                 currentDbConnectionPoolSize = averageActiveConnectionsInPast+1;
                                 if(currentDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
                                     currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
@@ -79,7 +79,6 @@ class ConnectionPoolManager {
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             }
-                            System.out.println("ran timer test1");
                             timesManagerTimerRan++;
                         }
                     },
@@ -94,9 +93,8 @@ class ConnectionPoolManager {
                         @Override
                         public void run() {
                             totalUsedConnectionsEverySecondBeforeReAdjustment.add(connectionPool.stream()
-                                    .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
+                                    .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()) != null && connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
                                     .count());
-                            System.out.println("ran timer test2");
                         }
                     },
                     1000L, 1000L
