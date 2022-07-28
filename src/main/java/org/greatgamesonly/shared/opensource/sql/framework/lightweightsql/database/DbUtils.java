@@ -14,16 +14,14 @@ public class DbUtils {
     private static final Map<String, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
 
     public static Collection<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<?> entityClass) throws IntrospectionException {
-        if(
-            inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()) == null ||
-            inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()).isEmpty()
-        ) {
+        HashMap<String, DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName());
+        if(dbEntityColumnToFieldToGetters == null || dbEntityColumnToFieldToGetters.isEmpty()) {
             boolean getSuperClassGettersAndSettersAlso = (entityClass.getSuperclass() != null &&
                     !entityClass.getSuperclass().equals(BaseEntity.class) &&
                     entityClass.getSuperclass().getSuperclass() != null &&
                     entityClass.getSuperclass().getSuperclass().equals(BaseEntity.class));
 
-            inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(), new HashMap<>());
+            dbEntityColumnToFieldToGetters = new HashMap<>();
             Field[] fields = getClassFields(entityClass, false, List.of(DBIgnore.class));
             Set<String> getters = getGetters(entityClass);
             Set<String> setters = getSetters(entityClass);
@@ -79,12 +77,24 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
                     dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOne.class).referenceFromColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOne.class).referenceToColumnName());
-                    dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(field.getType()).stream()
+
+                    Collection<DbEntityColumnToFieldToGetter> toOneEntityDbEntityColumnToFieldsToGetters = getDbEntityColumnToFieldToGetters(field.getType());
+
+                    dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(toOneEntityDbEntityColumnToFieldsToGetters.stream()
                             .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).referenceToColumnName()))
-                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship from %s must connect to a valid field in the %s",entityClass,field.getType())))
+                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship from %s must connect to a valid field in %s",entityClass,field.getType())))
                             .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
+                    dbEntityColumnToFieldToGetter.setToOneEntityReferenceFromColumnName(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName());
+
+                    if(toOneEntityDbEntityColumnToFieldsToGetters.stream()
+                        .noneMatch(toOneEntityDbEntityColumnToFieldsToGetter ->
+                                toOneEntityDbEntityColumnToFieldsToGetter.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getToOneEntityReferenceFromColumnName())
+                        )
+                    ) {
+                        throw new IntrospectionException(String.format("ToOneEntityReferenceFromColumnName must link to a field in %s from %s for %s",field.getType(),entityClass,field.getName()));
+                    }
                 }
                 if(field.isAnnotationPresent(ManyToOne.class)) {
                     if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
@@ -128,16 +138,17 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setPrimaryKeyName(field.getName());
                 }
                 if(dbEntityColumnToFieldToGetter.getSetterMethodName() == null || dbEntityColumnToFieldToGetter.getGetterMethodName() == null) {
-                    throw new IllegalArgumentException(
+                    throw new IntrospectionException(
                             String.format("getter and setter methods could not be determined for field %s for class %s, please check if standard getter and setter methods exist for this field",
                                 field.getName(),
                                 entityClass
                             ));
                 }
-                inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()).put(field.getName(),dbEntityColumnToFieldToGetter);
+                dbEntityColumnToFieldToGetters.put(field.getName(),dbEntityColumnToFieldToGetter);
             }
+            inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(),dbEntityColumnToFieldToGetters);
         }
-        return inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName()).values();
+        return dbEntityColumnToFieldToGetters.values();
     }
 
     public static List<DbEntityColumnToFieldToGetter> getOneToManyRelationFieldToGetters(Class<?> entityClass) throws IntrospectionException {

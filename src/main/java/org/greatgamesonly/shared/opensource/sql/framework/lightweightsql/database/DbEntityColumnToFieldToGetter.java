@@ -2,8 +2,6 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
 
-import java.lang.annotation.Annotation;
-
 public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
@@ -29,6 +27,8 @@ public class DbEntityColumnToFieldToGetter {
     private String referenceFromColumnName;
 
     private String referenceToColumnName;
+
+    private String toOneEntityReferenceFromColumnName;
 
     private String referenceToColumnClassFieldGetterMethodName;
 
@@ -211,5 +211,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setInsertOrUpdateRelationInDbInteractions(boolean insertOrUpdateRelationInDbInteractions) {
         this.insertOrUpdateRelationInDbInteractions = insertOrUpdateRelationInDbInteractions;
+    }
+
+    public String getToOneEntityReferenceFromColumnName() {
+        return toOneEntityReferenceFromColumnName;
+    }
+
+    public void setToOneEntityReferenceFromColumnName(String toOneEntityReferenceFromColumnName) {
+        this.toOneEntityReferenceFromColumnName = toOneEntityReferenceFromColumnName;
     }
 }
