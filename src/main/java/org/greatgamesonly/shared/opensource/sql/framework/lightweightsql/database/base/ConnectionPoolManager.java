@@ -82,7 +82,7 @@ class ConnectionPoolManager {
                             timesManagerTimerRan++;
                         }
                     },
-                    managerTimerIntervalSeconds * 1000L, managerTimerIntervalSeconds * 1000L
+                    1000L, managerTimerIntervalSeconds * 1000L
             );
             managerTimer = timer;
         }
