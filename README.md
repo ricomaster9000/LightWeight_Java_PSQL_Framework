@@ -9,6 +9,8 @@ It uses Apache's DB Utils as its core, with more code wrapped around that but it
 
 This is for people sick of the over-bloatedesness and over-abstraction of Hibernate or JPA/JTA frameworks, this is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
 
+set the following properties inside you properties file: datasource.url datasource.username datasource.password
+
 See example package for some examples on how to use this library/small-framework
 (https://github.com/ricomaster9000/LightWeight_Java_PSQL_SQL_Framework/tree/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/example)
 
