@@ -77,10 +77,11 @@ public class DbUtils {
                     }
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
+                    dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOne.class).referenceFromColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOne.class).referenceToColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(field.getType()).stream()
                             .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).referenceToColumnName()))
-                            .findFirst().orElseThrow(() -> new IntrospectionException("OneToOne annotation can only be applied to BaseEntity value type"))
+                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship from %s must connect to a valid field in the %s",entityClass,field.getType())))
                             .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
