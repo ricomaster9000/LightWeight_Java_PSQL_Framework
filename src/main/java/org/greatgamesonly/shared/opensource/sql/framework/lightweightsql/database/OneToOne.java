@@ -16,5 +16,7 @@ public @interface OneToOne {
 
     public String referenceToColumnName();
 
+    public String toOneEntityReferenceFromColumnName();
+
     public Class<? extends BaseEntity> toOneEntityClass();
 }
