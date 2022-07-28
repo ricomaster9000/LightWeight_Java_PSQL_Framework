@@ -79,6 +79,7 @@ class ConnectionPoolManager {
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             }
+                            System.out.println("ran timer test1");
                             timesManagerTimerRan++;
                         }
                     },
@@ -95,6 +96,7 @@ class ConnectionPoolManager {
                             totalUsedConnectionsEverySecondBeforeReAdjustment.add(connectionPool.stream()
                                     .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
                                     .count());
+                            System.out.println("ran timer test2");
                         }
                     },
                     1000L
