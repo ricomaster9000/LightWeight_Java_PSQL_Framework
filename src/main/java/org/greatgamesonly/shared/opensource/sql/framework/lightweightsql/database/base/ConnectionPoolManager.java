@@ -54,12 +54,17 @@ class ConnectionPoolManager {
                                 }
                                 totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
                             }
-                            connectionPool.removeIf((connectionPool) -> {
-                                boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connectionPool.getUniqueReference()) && (connectionPool.getTimeConnectionOpened().before(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection()));
+                            connectionPool.removeIf((connection) -> {
+                                boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connection.getUniqueReference()) &&
+                                        (
+                                                connection.getTimeConnectionOpened().before(DbUtils.nowDbTimestamp(connectionOpenHours)) ||
+                                                !isDbConnected(connection.getConnection()) ||
+                                                connectionPool.size() > currentDbConnectionPoolSize
+                                        );
                                 if(mustCloseAndRemove) {
                                     try {
-                                        org.apache.commons.dbutils.DbUtils.close(connectionPool.getConnection());
-                                        connectionPoolInUseStatuses.remove(connectionPool.getUniqueReference());
+                                        org.apache.commons.dbutils.DbUtils.close(connection.getConnection());
+                                        connectionPoolInUseStatuses.remove(connection.getUniqueReference());
                                     } catch (SQLException ignored) {
                                         System.out.println("lightweightsql - ConnectionPoolManager -> unable to close a db connection properly");
                                     }
