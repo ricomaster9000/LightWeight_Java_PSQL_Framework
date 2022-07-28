@@ -44,7 +44,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
 
     public BaseRepository() {
-        ConnectionPoolManager.startManager(getDbConnectionDetails());
+        ConnectionPoolManager.startManager();
     }
 
     public Class<E> getDbEntityClass() {
@@ -81,10 +81,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             dbEntityTableName = getDbEntityClass().getAnnotation(Entity.class).tableName();
         }
         return dbEntityTableName;
-    }
-
-    public Map<String, String> getDbConnectionDetails() {
-        return DbConnectionManager.CONNECTION_DETAILS;
     }
 
     public E getById(Long id) throws RepositoryException {

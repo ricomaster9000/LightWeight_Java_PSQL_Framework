@@ -11,18 +11,14 @@ class ConnectionPoolManager {
 
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
 
-    private static Map<String, String> connectionDetailsUsed;
-
     private static final int connectionOpenHours = 1;
-
-    private static boolean managerStarted;
 
     static Timer managerTimer;
 
-    static Timer startManager(Map<String, String> connectionDetails) {
+    static Timer startManager() {
         if(managerTimer == null) {
             try {
-                setConnectionPool(connectionDetails);
+                setConnectionPool(DbConnectionManager.getDbConnectionDetails());
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -41,7 +37,7 @@ class ConnectionPoolManager {
                                 return mustCloseAndRemove;
                             });
                             try {
-                                setConnectionPool(connectionDetails);
+                                setConnectionPool(DbConnectionManager.getDbConnectionDetails());
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             }
@@ -59,14 +55,13 @@ class ConnectionPoolManager {
     }
 
     static void setConnectionPool(Map<String, String> connectionDetails) throws SQLException {
-        connectionDetailsUsed = connectionDetails;
         if(connectionPool.isEmpty() || connectionPool.size() < 10) {
             int maxConnectionsToOpen = Integer.parseInt(connectionDetails.get("DB_CONNECTION_POOL_SIZE")) - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
-                        connectionDetailsUsed.get("DatabaseUrl"),
-                        connectionDetailsUsed.get("User"),
-                        connectionDetailsUsed.get("Password")
+                        DbConnectionManager.getDbConnectionDetails().get("DatabaseUrl"),
+                        DbConnectionManager.getDbConnectionDetails().get("User"),
+                        DbConnectionManager.getDbConnectionDetails().get("Password")
                 );
                 connection.setAutoCommit(true);
                 connectionPool.add(new PooledConnection(connection, DbUtils.nowDbTimestampPlusMinutes(maxConnectionsToOpen*5)));

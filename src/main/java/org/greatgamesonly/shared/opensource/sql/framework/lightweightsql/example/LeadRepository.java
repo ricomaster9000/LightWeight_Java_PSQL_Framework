@@ -15,13 +15,6 @@ class LeadRepository extends BaseRepository<Lead> {
 
     public LeadRepository() {}
 
-    @Override
-    public Map<String, String> getDbConnectionDetails() {
-        return Map.of("DatabaseUrl", "testDbName",
-                "User", "TestUser",
-                "Password", "TestPassword");
-    }
-
     public Lead getByConnexId(Long connexId) throws RepositoryException {
         List<Lead> leads = super.executeGetQuery("SELECT * from leads WHERE connex_id = ?", connexId);
         return leads != null && leads.size() > 0 ? leads.get(0) : null;
