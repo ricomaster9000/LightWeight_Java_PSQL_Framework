@@ -12,6 +12,7 @@ import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 
 public class DbUtils {
     private static final Map<String, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
+    private static final Map<String, DbEntityColumnToFieldToGetter> inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter = new HashMap<>();
 
     public static Collection<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<?> entityClass) throws IntrospectionException {
         HashMap<String, DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName());
@@ -179,6 +180,21 @@ public class DbUtils {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(dbEntityColumnToFieldToGet -> dbEntityColumnToFieldToGet.isForManyToOneReferenceId() && dbEntityColumnToFieldToGet.getReferenceFromColumnName().equals(dbEntityColumnToFieldToGetter.getLinkedDbColumnName()))
                 .collect(Collectors.toList()).get(0);
+    }
+
+    public static DbEntityColumnToFieldToGetter getOneToOneRefFromRelationColumnToFieldToGetter(Class<?> entityClass, DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) throws IntrospectionException {
+        DbEntityColumnToFieldToGetter result = inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter.get(entityClass.toString()+dbEntityColumnToFieldToGetter.getReferenceFromColumnName());
+        if(result == null) {
+            result = getDbEntityColumnToFieldToGetters(entityClass).stream()
+                    .filter(dbEntityColumnToFieldToGet ->  dbEntityColumnToFieldToGet.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName()))
+                    .collect(Collectors.toList()).get(0);
+            inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter.put(entityClass.toString()+dbEntityColumnToFieldToGetter.getReferenceFromColumnName(),result);
+        }
+        return result;
+    }
+
+    public static String getOneToOneRefFromRelationColumnToFieldToGetter_SetterMethod(Class<?> entityClass, DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) throws IntrospectionException {
+        return getOneToOneRefFromRelationColumnToFieldToGetter(entityClass, dbEntityColumnToFieldToGetter).getSetterMethodName();
     }
 
     public static Map<String, String> getColumnsToFieldsMap(Class<?> entityClass) throws IntrospectionException {

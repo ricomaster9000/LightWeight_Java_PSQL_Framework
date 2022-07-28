@@ -5,13 +5,17 @@ public class RepositoryError extends CustomError {
 
     public static final RepositoryError REPOSITORY_GET__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00100", "Error getting entity data from database",
             500);
+    public static final RepositoryError REPOSITORY_GENERAL__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00098", "General Error",
+            500);
+    public static final RepositoryError REPOSITORY_GENERAL_SQL__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00099", "General SQL related error",
+            500);
     public static final RepositoryError REPOSITORY_RUN_QUERY__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00101", "Error running query on database",
             500);
     public static final RepositoryError REPOSITORY_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102", "Error inserting entity into database",
             500);
     public static final RepositoryError REPOSITORY_PREPARE_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102b", "Error preparing insert entity into database",
             500);
-    public static final RepositoryError REPOSITORY_INSERT_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102c", "Error inserting entity into database because inserted data violates a unique db constraint",
+    public static final RepositoryError REPOSITORY_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102c", "Error inserting entity into database because inserted data violates a unique db constraint",
             500);
     public static final RepositoryError REPOSITORY_PREPARE_CLASS__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00103", "Error getting repository class data ready",
             500);
