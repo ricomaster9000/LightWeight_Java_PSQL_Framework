@@ -7,7 +7,6 @@ import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 
@@ -189,12 +188,23 @@ public class DbUtils {
         return calendar;
     }
 
+    private static Calendar nowCalPlusMinutes(String timezone, int plusMinutes) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone(timezone));
+        calendar.add(Calendar.MINUTE, plusMinutes);
+        return calendar;
+    }
+
     public static java.sql.Timestamp nowDbTimestamp() {
         return new java.sql.Timestamp(nowCal("UTC").getTimeInMillis());
     }
 
     public static java.sql.Timestamp nowDbTimestamp(int minusHours) {
         return new java.sql.Timestamp(nowCal("UTC", minusHours).getTimeInMillis());
+    }
+
+    public static java.sql.Timestamp nowDbTimestampPlusMinutes(int plusMinutes) {
+        return new java.sql.Timestamp(nowCalPlusMinutes("UTC", plusMinutes).getTimeInMillis());
     }
 
     public static java.sql.Timestamp nowDbTimestamp(String timezone) {

@@ -21,8 +21,6 @@ import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 
 public abstract class BaseRepository<E extends BaseEntity> {
-
-    private Connection connection;
     private Class<E> dbEntityClass;
     private Class<E[]> dbEntityArrayClass;
 
@@ -43,7 +41,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s%s";
     private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
 
-    public BaseRepository() {}
+    public BaseRepository() {
+        ConnectionPoolManager.startManager(getDbConnectionDetails());
+    }
 
     public Class<E> getDbEntityClass() {
         if(dbEntityClass == null) {
@@ -633,17 +633,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected Connection getConnection() throws SQLException {
-        if(connection == null || connection.isClosed()) {
-            Map<String, String> dbConnectionDetails = getDbConnectionDetails();
-
-            connection = DriverManager.getConnection(
-                    dbConnectionDetails.get("DatabaseUrl"),
-                    dbConnectionDetails.get("User"),
-                    dbConnectionDetails.get("Password")
-            );
-            connection.setAutoCommit(true);
-        }
-        return connection;
+        return ConnectionPoolManager.getConnection();
     }
 
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
