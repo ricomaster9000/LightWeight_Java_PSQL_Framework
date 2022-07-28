@@ -19,10 +19,23 @@ class ConnectionPoolManager {
 
     static Timer managerTimer;
 
+    static Timer dbConnectionPoolMonitorTimer;
+
+    static int managerTimerIntervalSeconds = 30;
+
+    static int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
+
+    static int timesManagerTimerRan = 0;
+
+    static ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
+
+    static int currentDbConnectionPoolSize;
+
     static Timer startManager() {
         if(managerTimer == null) {
+            currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
             try {
-                setConnectionPool(DbConnectionManager.getDbConnectionDetails());
+                setConnectionPool();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -31,30 +44,54 @@ class ConnectionPoolManager {
                     new TimerTask() {
                         @Override
                         public void run() {
+                            if(timesManagerTimerRan >= timesManagerTimerMustRunBeforePoolSizeReAdjustment) {
+                                timesManagerTimerRan = 0;
+                                int averageActiveConnectionsInPast = new Double(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
+                                        .average().getAsDouble())+1D).intValue();
+                                currentDbConnectionPoolSize = averageActiveConnectionsInPast+1;
+                                totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
+                            }
                             connectionPool.removeIf((connectionPool) -> {
                                 boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connectionPool.getUniqueReference()) && (connectionPool.getTimeConnectionOpened().before(DbUtils.nowDbTimestamp(connectionOpenHours)) || !isDbConnected(connectionPool.getConnection()));
                                 if(mustCloseAndRemove) {
                                     try {
                                         org.apache.commons.dbutils.DbUtils.close(connectionPool.getConnection());
+                                        connectionPoolInUseStatuses.remove(connectionPool.getUniqueReference());
                                     } catch (SQLException ignored) {
                                         System.out.println("lightweightsql - ConnectionPoolManager -> unable to close a db connection properly");
                                     }
                                 }
                                 try {
-                                    Thread.sleep(1000);
+                                    Thread.sleep(50);
                                 } catch (InterruptedException ignored) {}
                                 return mustCloseAndRemove;
                             });
                             try {
-                                setConnectionPool(DbConnectionManager.getDbConnectionDetails());
+                                setConnectionPool();
                             } catch (SQLException e) {
                                 throw new RuntimeException(e);
                             }
+                            timesManagerTimerRan++;
                         }
                     },
-                    15 * 60 * 1000
+                    managerTimerIntervalSeconds * 1000L
             );
             managerTimer = timer;
+        }
+        if(dbConnectionPoolMonitorTimer == null) {
+            Timer timer = new Timer();
+            timer.schedule(
+                    new TimerTask() {
+                        @Override
+                        public void run() {
+                            totalUsedConnectionsEverySecondBeforeReAdjustment.add(connectionPool.stream()
+                                    .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
+                                    .count());
+                        }
+                    },
+                    1000L
+            );
+            dbConnectionPoolMonitorTimer = timer;
         }
         return managerTimer;
     }
@@ -63,9 +100,9 @@ class ConnectionPoolManager {
         return connectionPool;
     }
 
-    static void setConnectionPool(Map<String, String> connectionDetails) throws SQLException {
-        if(connectionPool.isEmpty() || connectionPool.size() < 10) {
-            int maxConnectionsToOpen = getDatabaseMaxDbConnectionPool() - connectionPool.size();
+    static void setConnectionPool() throws SQLException {
+        if(connectionPool.isEmpty() || connectionPool.size() < currentDbConnectionPoolSize) {
+            int maxConnectionsToOpen = currentDbConnectionPoolSize - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
                         DbConnectionManager.getDbConnectionDetails().get("DatabaseUrl"),
@@ -85,7 +122,7 @@ class ConnectionPoolManager {
         PooledConnection pooledConnection = getConnectionPool().stream()
             .filter(pooledCon -> isDbConnected(pooledCon.getConnection()))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("no pooled db connection could be fetched for use"));
+            .orElseThrow(() -> new RuntimeException("lightweightsql - ConnectionPoolManager -> no pooled db connection could be fetched for use"));
         connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(),true);
         return pooledConnection;
     }
