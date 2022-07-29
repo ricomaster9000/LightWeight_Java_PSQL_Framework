@@ -7,9 +7,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionManager.getDatabaseMaxDbConnectionPool;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
 
-class ConnectionPoolManager {
+class DbConnectionPoolManager {
 
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
 
@@ -114,9 +114,9 @@ class ConnectionPoolManager {
             int maxConnectionsToOpen = currentDbConnectionPoolSize - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
-                        DbConnectionManager.getDbConnectionDetails().get("DatabaseUrl"),
-                        DbConnectionManager.getDbConnectionDetails().get("User"),
-                        DbConnectionManager.getDbConnectionDetails().get("Password")
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("DatabaseUrl"),
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("User"),
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("Password")
                 );
                 connection.setAutoCommit(true);
                 String uniqueReference = UUID.randomUUID().toString();

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -21,7 +20,7 @@ import java.util.stream.Stream;
 
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.ConnectionPoolManager.connectionPoolInUseStatuses;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionPoolManager.connectionPoolInUseStatuses;
 
 public abstract class BaseRepository<E extends BaseEntity> {
     private Class<E> dbEntityClass;
@@ -45,7 +44,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
 
     public BaseRepository() {
-        ConnectionPoolManager.startManager();
+        DbConnectionPoolManager.startManager();
     }
 
     public Class<E> getDbEntityClass() {
@@ -635,7 +634,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected PooledConnection getConnection() throws SQLException {
-        return ConnectionPoolManager.getConnection();
+        return DbConnectionPoolManager.getConnection();
     }
 
     protected BaseBeanListHandler<E> getQueryResultHandler() throws RepositoryException {
