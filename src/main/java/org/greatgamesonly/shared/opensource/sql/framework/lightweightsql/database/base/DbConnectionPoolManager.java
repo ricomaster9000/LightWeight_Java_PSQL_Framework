@@ -47,8 +47,8 @@ class DbConnectionPoolManager {
                             if(timesManagerTimerRan >= timesManagerTimerMustRunBeforePoolSizeReAdjustment) {
                                 timesManagerTimerRan = 0;
                                 int averageActiveConnectionsInPast = new Double(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
-                                        .average().orElse(1D))+1D).intValue();
-                                currentDbConnectionPoolSize = averageActiveConnectionsInPast+1;
+                                        .average().orElse(0D))+1D).intValue();
+                                currentDbConnectionPoolSize = averageActiveConnectionsInPast;
                                 if(currentDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
                                     currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
                                 }
