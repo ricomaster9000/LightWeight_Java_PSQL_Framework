@@ -21,7 +21,7 @@ class ConnectionPoolManager {
 
     static Timer dbConnectionPoolMonitorTimer;
 
-    static int managerTimerIntervalSeconds = 30;
+    static int managerTimerIntervalSeconds = 15;
 
     static int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
 
@@ -93,11 +93,12 @@ class ConnectionPoolManager {
                         @Override
                         public void run() {
                             totalUsedConnectionsEverySecondBeforeReAdjustment.add(connectionPool.stream()
-                                    .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()) != null && connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
-                                    .count());
+                                .filter(pooledConnection -> connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()) != null && connectionPoolInUseStatuses.get(pooledConnection.getUniqueReference()))
+                                .count()
+                            );
                         }
                     },
-                    1000L, 1000L
+                    100L, 1000L
             );
             dbConnectionPoolMonitorTimer = timer;
         }
