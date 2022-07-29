@@ -3,7 +3,7 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 import java.util.HashMap;
 import java.util.Properties;
 
-public class DbConnectionManager {
+public class DbConnectionDetailsManager {
 
     private static final HashMap<String, String> CONNECTION_DETAILS = new HashMap<>();
     static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 50;
