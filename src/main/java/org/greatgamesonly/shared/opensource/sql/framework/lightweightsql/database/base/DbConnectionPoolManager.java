@@ -53,7 +53,6 @@ class DbConnectionPoolManager {
                                     currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
                                 }
                                 totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
-                                connectionPoolInUseStatuses.clear();
                             }
                             connectionPool.removeIf((connection) -> {
                                 boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connection.getUniqueReference()) &&
