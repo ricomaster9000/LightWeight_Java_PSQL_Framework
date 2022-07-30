@@ -53,6 +53,7 @@ class DbConnectionPoolManager {
                                     currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
                                 }
                                 totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
+                                connectionPoolInUseStatuses.clear();
                             }
                             connectionPool.removeIf((connection) -> {
                                 boolean mustCloseAndRemove = !connectionPoolInUseStatuses.get(connection.getUniqueReference()) &&
@@ -70,7 +71,7 @@ class DbConnectionPoolManager {
                                     }
                                 }
                                 try {
-                                    Thread.sleep(50);
+                                    Thread.sleep(getDatabaseMaxDbConnectionPool() <= 125 ? 100 : 50);
                                 } catch (InterruptedException ignored) {}
                                 return mustCloseAndRemove;
                             });
@@ -131,7 +132,14 @@ class DbConnectionPoolManager {
         PooledConnection pooledConnection = getConnectionPool().stream()
             .filter(pooledCon -> isDbConnected(pooledCon.getConnection()))
             .findFirst()
-            .orElseThrow(() -> new RuntimeException("lightweightsql - ConnectionPoolManager -> no pooled db connection could be fetched for use"));
+            .orElse(null);
+        // poll till you get a connection
+        if(pooledConnection == null) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ignored) {}
+            pooledConnection = getConnection();
+        }
         connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(),true);
         return pooledConnection;
     }
