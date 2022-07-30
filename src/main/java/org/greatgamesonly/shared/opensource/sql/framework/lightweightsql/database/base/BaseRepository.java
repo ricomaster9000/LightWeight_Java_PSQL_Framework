@@ -456,6 +456,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                     try {
                         if(dbEntityColumnToFieldToGetter.hasSetter() && includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations(dbEntityColumnToFieldToGetter)) {
                             Object getterValue = callReflectionMethodQuick(entityToInsert, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
+                                getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
+                            }
                             toAppendValues.add((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
