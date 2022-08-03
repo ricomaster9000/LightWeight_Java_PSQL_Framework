@@ -28,7 +28,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private String dbEntityTableName;
 
-    private Repository annotation;
+    private Repository repoAnnotation;
+
+    private Entity entityAnnotation;
 
     private BaseBeanListHandler<E> queryHandler;
 
@@ -56,17 +58,35 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public Repository getRepositoryAnnotation() {
         try {
-            if (dbEntityClass == null) {
+            if (repoAnnotation == null) {
                 if (this.getClass().isAnnotationPresent(Repository.class)) {
-                    annotation = this.getClass().getAnnotation(Repository.class);
+                    repoAnnotation = this.getClass().getAnnotation(Repository.class);
                 } else if (this.getClass().getName().endsWith("_Subclass")/*Quarkus_Support*/) {
-                    annotation = getClassByName(this.getClass().getName().replaceAll("_Subclass", "")).getAnnotation(Repository.class);
+                    repoAnnotation = getClassByName(this.getClass().getName().replaceAll("_Subclass", "")).getAnnotation(Repository.class);
+                }
+                if(repoAnnotation == null || repoAnnotation.dbEntityClass() == null) {
+                    throw new Exception(String.format("Linked Repository annotation to class %s is invalid",this.getClass()));
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException("unable to fetch details from Repository annotation for repository, make sure it was set with correct info, "+e.getMessage());
         }
-        return annotation;
+        return repoAnnotation;
+    }
+
+    public Entity getEntityAnnotation() {
+            if(entityAnnotation == null) {
+                Repository repositoryAnnotation = getRepositoryAnnotation();
+                try {
+                    entityAnnotation = repositoryAnnotation.dbEntityClass().getAnnotation(Entity.class);
+                    if(entityAnnotation == null || entityAnnotation.tableName() == null || entityAnnotation.tableName().isBlank() || entityAnnotation.repositoryClass() == null) {
+                        throw new Exception(String.format("Linked Entity annotation to class %s is invalid",this.getClass()));
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("unable to fetch details from Entity annotation for repository, make sure it was set with correct info, "+e.getMessage());
+                }
+            }
+        return entityAnnotation;
     }
 
     public Class<E[]> getDbEntityArrayClass() {
@@ -78,7 +98,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public String getDbEntityTableName() {
         if(dbEntityTableName == null) {
-            dbEntityTableName = getDbEntityClass().getAnnotation(Entity.class).tableName();
+            dbEntityTableName = getEntityAnnotation().tableName();
         }
         return dbEntityTableName;
     }
