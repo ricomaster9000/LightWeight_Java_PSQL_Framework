@@ -314,6 +314,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected List<E> executeGetQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
+        if(getEntityAnnotation().addToWhereForEveryHandledGetQuery() != null && !getEntityAnnotation().addToWhereForEveryHandledGetQuery().isBlank()) {
+            queryToRun = addWhereForEveryHandledGetQuery(queryToRun);
+        }
         return executeQuery(queryToRun, QueryType.GET, null, queryParameters);
     }
 
@@ -742,6 +745,22 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
         }
         return result;
+    }
+
+    private String addWhereForEveryHandledGetQuery(String queryToAddTo) {
+        String formattedQueryWithAdditionalWhere = "";
+        String potentialWherePartInQuery = String.format("FROM %s WHERE",getDbEntityTableName());
+        if(queryToAddTo.contains(potentialWherePartInQuery)) {
+            formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialWherePartInQuery, potentialWherePartInQuery + " " + getEntityAnnotation().addToWhereForEveryHandledGetQuery());
+        } else {
+            String potentialNonWherePartInQuery = String.format("FROM %s",getDbEntityTableName());
+            formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialNonWherePartInQuery, potentialNonWherePartInQuery + " WHERE " + getEntityAnnotation().addToWhereForEveryHandledGetQuery());
+        }
+        return formattedQueryWithAdditionalWhere;
+    }
+
+    private String addWordAfterWords(String whereToAddWordTo, String wordToAdd, String afterWhichWordsOrWordsToAdd) {
+        return whereToAddWordTo.replaceFirst(afterWhichWordsOrWordsToAdd, afterWhichWordsOrWordsToAdd + " " + wordToAdd);
     }
 
 }

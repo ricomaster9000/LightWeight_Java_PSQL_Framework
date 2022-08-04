@@ -15,4 +15,6 @@ public @interface Entity {
     public String tableName();
 
     public Class<? extends BaseRepository<? extends BaseEntity>> repositoryClass();
+
+    public String addToWhereForEveryHandledGetQuery() default "";
 }
