@@ -21,7 +21,7 @@ class DbConnectionPoolManager {
 
     static Timer dbConnectionPoolMonitorTimer;
 
-    static int managerTimerIntervalSeconds = 15;
+    static int managerTimerIntervalSeconds = 10;
 
     static int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
 
@@ -29,11 +29,11 @@ class DbConnectionPoolManager {
 
     static ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
 
-    static int currentDbConnectionPoolSize;
+    static int currentMaxDbConnectionPoolSize;
 
     static Timer startManager() {
         if(managerTimer == null) {
-            currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
+            currentMaxDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
             try {
                 setConnectionPool();
             } catch (SQLException e) {
@@ -48,9 +48,9 @@ class DbConnectionPoolManager {
                                 timesManagerTimerRan = 0;
                                 int averageActiveConnectionsInPast = new Double(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
                                         .average().orElse(0D))+1D).intValue();
-                                currentDbConnectionPoolSize = averageActiveConnectionsInPast;
-                                if(currentDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
-                                    currentDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
+                                currentMaxDbConnectionPoolSize = averageActiveConnectionsInPast;
+                                if(currentMaxDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
+                                    currentMaxDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
                                 }
                                 totalUsedConnectionsEverySecondBeforeReAdjustment.clear();
                             }
@@ -59,7 +59,7 @@ class DbConnectionPoolManager {
                                         (
                                                 connection.getTimeConnectionOpened().before(DbUtils.nowDbTimestamp(connectionOpenHours)) ||
                                                 !isDbConnected(connection.getConnection()) ||
-                                                connectionPool.size() > currentDbConnectionPoolSize
+                                                connectionPool.size() > currentMaxDbConnectionPoolSize
                                         );
                                 if(mustCloseAndRemove) {
                                     try {
@@ -110,8 +110,8 @@ class DbConnectionPoolManager {
     }
 
     static void setConnectionPool() throws SQLException {
-        if(connectionPool.isEmpty() || connectionPool.size() < currentDbConnectionPoolSize) {
-            int maxConnectionsToOpen = currentDbConnectionPoolSize - connectionPool.size();
+        if(connectionPool.isEmpty() || connectionPool.size() < currentMaxDbConnectionPoolSize) {
+            int maxConnectionsToOpen = currentMaxDbConnectionPoolSize - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
                         DbConnectionDetailsManager.getDbConnectionDetails().get("DatabaseUrl"),

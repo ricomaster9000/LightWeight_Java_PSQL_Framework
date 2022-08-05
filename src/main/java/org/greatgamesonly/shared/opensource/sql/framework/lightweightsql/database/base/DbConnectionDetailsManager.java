@@ -6,7 +6,7 @@ import java.util.Properties;
 public class DbConnectionDetailsManager {
 
     private static final HashMap<String, String> CONNECTION_DETAILS = new HashMap<>();
-    static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 50;
+    static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 40;
 
     private static Properties properties;
 

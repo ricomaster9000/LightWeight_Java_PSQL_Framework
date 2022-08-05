@@ -21,12 +21,15 @@ import java.util.stream.Stream;
 import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionPoolManager.connectionPoolInUseStatuses;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR;
 
 public abstract class BaseRepository<E extends BaseEntity> {
     private Class<E> dbEntityClass;
     private Class<E[]> dbEntityArrayClass;
 
     private String dbEntityTableName;
+
+    private String primaryKeyColumnName;
 
     private Repository repoAnnotation;
 
@@ -44,6 +47,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s";
     private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s%s";
     private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
+    private final static String DELETE_BY_COLUMN_QUERY_UNFORMATTED = "DELETE * FROM %s WHERE %s = %s";
 
     public BaseRepository() {
         DbConnectionPoolManager.startManager();
@@ -116,15 +120,15 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeGetQuery(String.format(GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),orderBy.getQueryEquivalent(orderByColumnName)));
     }
 
-    public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName) throws RepositoryException {
-        return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null);
+    public List<E> getAllByMinAndMaxAndColumn(Object minId, Object maxId, String columnName) throws RepositoryException {
+        return getAllByMinAndMaxAndColumn(minId, maxId, columnName, null);
     }
 
-    public Map<Long,E> getAllByMinAndMaxAndColumnNameAsMap(Object minId, Object maxId, String columnName) throws RepositoryException {
-        return getAllByMinAndMaxAndColumnName(minId, maxId, columnName, null).stream().collect(Collectors.toMap(BaseEntity::getId, entity -> entity));
+    public Map<Long,E> getAllByMinAndMaxAndColumnAsMap(Object minId, Object maxId, String columnName) throws RepositoryException {
+        return getAllByMinAndMaxAndColumn(minId, maxId, columnName, null).stream().collect(Collectors.toMap(BaseEntity::getId, entity -> entity));
     }
 
-    public List<E> getAllByMinAndMaxAndColumnName(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
+    public List<E> getAllByMinAndMaxAndColumn(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
         return executeGetQuery("SELECT * FROM " + getDbEntityTableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
                 " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
@@ -135,12 +139,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
         executeDeleteQuery("DELETE FROM " + getDbEntityTableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
     }
 
-    public List<E> getByColumnName(String columnName, Object columnValue) throws RepositoryException {
+    public void deleteByColumn(String columnName, Object columnValue) throws RepositoryException {
+        executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,columnValue));
+    }
+
+    public List<E> getByColumn(String columnName, Object columnValue) throws RepositoryException {
         return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
     }
 
-    public E getSingleEntityByColumnName(String columnName, Object columnValue) throws RepositoryException {
-        List<E> entitiesRetrieved = getByColumnName(columnName, columnValue);
+    public E getSingleEntityByColumn(String columnName, Object columnValue) throws RepositoryException {
+        List<E> entitiesRetrieved = getByColumn(columnName, columnValue);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
@@ -182,7 +190,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entitiesRetrieved;
     }
 
-    public List<E> getByColumnNameOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
+    public List<E> getByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
@@ -190,12 +198,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entitiesRetrieved;
     }
 
-    public E getSingleEntityByColumnNameOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
-        List<E> entitiesRetrieved = getByColumnNameOrderByPrimaryKey(columnName, columnValue, descOrAsc);
+    public E getSingleEntityByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
+        List<E> entitiesRetrieved = getByColumnOrderByPrimaryKey(columnName, columnValue, descOrAsc);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
-    public List<E> getByColumnNameOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
+    public List<E> getByColumnOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
@@ -280,7 +288,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<E> sortedEntitiesWithIds = entities.stream().filter(entity -> entity.getId() != null).sorted(Comparator.comparingLong(BaseEntity::getId)).collect(Collectors.toList());
         Map<Long, E> existingEntities = new HashMap<>();
         if(!sortedEntitiesWithIds.isEmpty()) {
-            existingEntities = getAllByMinAndMaxAndColumnNameAsMap(sortedEntitiesWithIds.get(0).getId(), sortedEntitiesWithIds.get(entities.size() - 1).getId(), "id");
+            existingEntities = getAllByMinAndMaxAndColumnAsMap(sortedEntitiesWithIds.get(0).getId(), sortedEntitiesWithIds.get(entities.size() - 1).getId(), "id");
         }
         Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters;
         try {
@@ -376,7 +384,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             continue; // Handled in the BaseBeanListHandler
                         }
                         BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumnName(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
+                        List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumn(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
                         for (BaseEntity relationEntity : toRelationEntities) {
                             E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethodQuick(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
                             callReflectionMethodQuick(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
@@ -536,8 +544,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             handleEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToUpdate);
             // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
 
-            String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
-
             stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityTableName()));
             for (BaseEntity entityToUpdate : entitiesToUpdate) {
                 if(entityToUpdate == null) {
@@ -562,7 +568,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 if (!entityToUpdate.equals(entitiesToUpdate.get(entitiesToUpdate.size() - 1))) {
                     stringBuilder.append(",");
                 } else {
-                    stringBuilder.append(String.format(" WHERE %s = %d", primaryKeyColumnName, entityToUpdate.getId()));
+                    stringBuilder.append(String.format(" WHERE %s = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
                 }
                 result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters);
             }
@@ -584,9 +590,18 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
-            String primaryKeyColumnName = getPrimaryKeyDbColumnName(dbEntityColumnToFieldToGetters);
+            Collection<DbEntityColumnToFieldToGetter> oneToManyRelationFieldToGetters = getOneToManyRelationFieldToGetters(getDbEntityClass());
 
-            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityTableName(), primaryKeyColumnName));
+            if(!oneToManyRelationFieldToGetters.isEmpty()) {
+                for(E entityToDelete : entitiesToDelete) {
+                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : oneToManyRelationFieldToGetters) {
+                        BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                        toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getReferenceToColumnName(), entityToDelete.getId());
+                    }
+                }
+            }
+
+            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityTableName(), getPrimaryKeyDbColumnName()));
             stringBuilder.append(
                 entitiesToDelete.stream()
                 .map(entity -> entity.getId().toString())
@@ -678,11 +693,18 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return new QueryRunner();
     }
 
-    private String getPrimaryKeyDbColumnName(Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters) throws RepositoryException {
-        return dbEntityColumnToFieldToGetters.stream()
-                .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
-                .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
-                .getDbColumnName();
+    private String getPrimaryKeyDbColumnName() throws RepositoryException {
+        if(primaryKeyColumnName == null) {
+            try {
+                primaryKeyColumnName = getDbEntityColumnToFieldToGetters(getDbEntityClass()).stream()
+                    .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
+                    .findFirst().orElseThrow(() -> new RepositoryException(REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR, "unable to determine primaryKey"))
+                    .getDbColumnName();
+            } catch (IntrospectionException e) {
+                throw new RepositoryException(REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR, e);
+            }
+        }
+        return primaryKeyColumnName;
     }
 
     private String getPrimaryKeyDbColumnName(Class<? extends BaseEntity> dbEntityClass) throws RepositoryException {
