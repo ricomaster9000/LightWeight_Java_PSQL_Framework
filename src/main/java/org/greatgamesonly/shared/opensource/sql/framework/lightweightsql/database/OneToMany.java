@@ -17,4 +17,6 @@ public @interface OneToMany {
     public Class<? extends BaseEntity> toManyEntityClass();
 
     public String addToWherePartInGetQuery() default "";
+
+    public boolean deleteToManyEntitiesAutomaticallyOnDelete() default true;
 }
