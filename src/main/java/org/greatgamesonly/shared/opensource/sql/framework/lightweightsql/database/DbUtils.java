@@ -56,19 +56,21 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setCanBeUpdatedInDb(false);
                 }
                 if(field.isAnnotationPresent(OneToMany.class)) {
+                    OneToMany oneToManyAnnotation = field.getAnnotation(OneToMany.class);
                     if(!field.getType().isInstance(List.class)) {
                         throw new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list");
                     }
                     dbEntityColumnToFieldToGetter.setForOneToManyRelation(true);
-                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToMany.class).toManyEntityClass());
-                    dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToMany.class).referenceToColumnName());
+                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(oneToManyAnnotation.toManyEntityClass());
+                    dbEntityColumnToFieldToGetter.setReferenceToColumnName(oneToManyAnnotation.referenceToColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(field.getType()).stream()
-                        .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToMany.class).referenceToColumnName()))
+                        .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(oneToManyAnnotation.referenceToColumnName()))
                         .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
                         .getGetterMethodName()
                     );
-                    dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(field.getAnnotation(OneToMany.class).addToWherePartInGetQuery());
+                    dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(oneToManyAnnotation.addToWherePartInGetQuery());
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
+                    dbEntityColumnToFieldToGetter.setDeleteToManyEntitiesAutomaticallyOnDelete(oneToManyAnnotation.deleteToManyEntitiesAutomaticallyOnDelete());
                 }
                 if(field.isAnnotationPresent(OneToOne.class)) {
                     if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {

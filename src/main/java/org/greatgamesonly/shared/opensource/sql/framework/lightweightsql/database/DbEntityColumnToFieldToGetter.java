@@ -40,6 +40,8 @@ public class DbEntityColumnToFieldToGetter {
 
     private boolean insertOrUpdateRelationInDbInteractions = false;
 
+    private boolean deleteToManyEntitiesAutomaticallyOnDelete = true;
+
     public String getDbColumnName() {
         return dbColumnName;
     }
@@ -219,5 +221,13 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setToOneEntityReferenceFromColumnName(String toOneEntityReferenceFromColumnName) {
         this.toOneEntityReferenceFromColumnName = toOneEntityReferenceFromColumnName;
+    }
+
+    public boolean getDeleteToManyEntitiesAutomaticallyOnDelete() {
+        return deleteToManyEntitiesAutomaticallyOnDelete;
+    }
+
+    public void setDeleteToManyEntitiesAutomaticallyOnDelete(boolean deleteToManyEntitiesAutomaticallyOnDelete) {
+        this.deleteToManyEntitiesAutomaticallyOnDelete = deleteToManyEntitiesAutomaticallyOnDelete;
     }
 }
