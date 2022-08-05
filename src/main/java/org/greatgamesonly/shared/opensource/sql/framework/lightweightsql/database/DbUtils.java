@@ -103,14 +103,13 @@ public class DbUtils {
                     }
                     dbEntityColumnToFieldToGetter.setForManyToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedDbColumnName(field.getAnnotation(ManyToOne.class).linkedDbColumnName());
-                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(ManyToOne.class).linkedEntityClass());
+                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(ManyToOne.class).toOneEntityClass());
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(field.getAnnotation(ManyToOne.class).insertOrUpdateRelationInDbInteractions());
                 }
                 if(field.isAnnotationPresent(ManyToOneReferenceId.class)) {
                     dbEntityColumnToFieldToGetter.setForManyToOneReferenceId(true);
-                    dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(ManyToOneReferenceId.class).toOneEntityClass());
-                    dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceFromColumnName());
-                    dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceFromColumnName());
+                    dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ManyToOneReferenceId.class).columnName());
+                    dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(ManyToOneReferenceId.class).columnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceToColumnName());
                 }
                 if(field.isAnnotationPresent(ColumnName.class)) {

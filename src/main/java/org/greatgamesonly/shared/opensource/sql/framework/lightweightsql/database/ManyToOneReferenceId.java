@@ -11,7 +11,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ManyToOneReferenceId {
     public String key() default "";
-    public String referenceFromColumnName();
+    public String columnName();
     public String referenceToColumnName();
-    public Class<? extends BaseEntity> toOneEntityClass();
 }

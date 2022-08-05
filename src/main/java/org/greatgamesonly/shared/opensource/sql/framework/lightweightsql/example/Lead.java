@@ -29,9 +29,9 @@ public class Lead extends BaseEntity {
     @ModifyDateAutoSet(timezone = "UTC")
     protected Timestamp modifyDate;
 
-    @ManyToOneReferenceId(referenceFromColumnName = "status_id", referenceToColumnName = "id", toOneEntityClass = StatusType.class)
+    @ManyToOneReferenceId(columnName = "status_id", referenceToColumnName = "id")
     protected Long statusId;
-    @ManyToOne(linkedDbColumnName = "status_id", linkedEntityClass = StatusType.class)
+    @ManyToOne(linkedDbColumnName = "status_id", toOneEntityClass = StatusType.class)
     protected StatusType status;
     @ColumnName("contact_type_id")
     @DoNotUpdateInDb
