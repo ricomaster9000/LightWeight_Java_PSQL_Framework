@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Repository(dbEntityClass = Lead.class)
 class LeadRepository extends BaseRepository<Lead> {
@@ -21,11 +20,11 @@ class LeadRepository extends BaseRepository<Lead> {
     }
 
     public Lead getByPhoneNumber(String phoneNumber) throws RepositoryException {
-        return super.getSingleEntityByColumnName("phone_number", phoneNumber);
+        return super.getSingleEntityByColumn("phone_number", phoneNumber);
     }
 
     public Lead getByPhoneNumberOldestFirst(String phoneNumber) throws RepositoryException {
-        return super.getSingleEntityByColumnNameOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
+        return super.getSingleEntityByColumnOrderByPrimaryKey("phone_number", phoneNumber, OrderBy.ASC);
     }
 
     public List<Lead> getAllAfterCreateDateRawQuery(java.sql.Timestamp afterThisDate) throws RepositoryException, SQLException {

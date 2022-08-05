@@ -33,6 +33,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_PREPARE_UPDATE__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00110", "Error preparing update-entity-query-and-related-info",
             500);
+    public static final RepositoryError REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00111", "Error when getting column name for field specified as @PrimaryKey",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);
