@@ -39,6 +39,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
 
     private final static String COUNT_BY_COLUMN_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s;";
+    private final static String GET_MAX_VALUE_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s;";
+    private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s WHERE %s = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
     private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
@@ -209,6 +211,37 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(orderByColumn));
         return entitiesRetrieved;
+    }
+
+    public Long getMaxValueForColumn(String maxColumnName) throws RepositoryException {
+        try {
+            long countTotal;
+            ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_QUERY_UNFORMATTED,maxColumnName,getDbEntityTableName()));
+            resultSet.next();
+            countTotal = resultSet.getLong("max");
+            resultSet.close();
+            return countTotal;
+        } catch (SQLException e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_GET_MAX_FOR_FIELD__ERROR,e);
+        }
+    }
+
+    public Long getMaxValueForColumnByColumn(String maxColumnName, String byColumnName, String byColumnValue) throws RepositoryException {
+        try {
+            long countTotal;
+            ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED,
+                    maxColumnName,
+                    getDbEntityTableName(),
+                    byColumnName,
+                    byColumnValue
+            ));
+            resultSet.next();
+            countTotal = resultSet.getLong("max");
+            resultSet.close();
+            return countTotal;
+        } catch (SQLException e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_GET_MAX_FOR_FIELD_BY_COLUMN__ERROR,e);
+        }
     }
 
     public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
