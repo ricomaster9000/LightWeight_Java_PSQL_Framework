@@ -7,7 +7,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import java.sql.Timestamp;
 import java.util.List;
 
-@Entity(tableName = "lead", repositoryClass = LeadRepository.class, manyToOneCacheHours = 1)
+@Entity(tableName = "lead", repositoryClass = LeadRepository.class)
 public class Lead extends BaseEntity {
     @PrimaryKey
     @ColumnName("contact_id")

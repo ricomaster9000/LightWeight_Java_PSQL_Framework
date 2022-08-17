@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Repository(dbEntityClass = Lead.class)
+@Repository(dbEntityClass = Lead.class, manyToOneCacheHours = 0)
 class LeadRepository extends BaseRepository<Lead> {
 
     public LeadRepository() {}
