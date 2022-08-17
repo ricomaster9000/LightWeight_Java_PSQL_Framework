@@ -14,6 +14,6 @@ set the following properties inside you properties file: datasource.url datasour
 See example package for some examples on how to use this library/small-framework
 (https://github.com/ricomaster9000/LightWeight_Java_PSQL_SQL_Framework/tree/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/example)
 
-add as dependency by using jitpack.io, go to this link: https://jitpack.io/#ricomaster9000/LightWeight_Java_PSQL_Framework/1.1.3
+add as dependency by using jitpack.io, go to this link: https://jitpack.io/#ricomaster9000/LightWeight_Java_PSQL_Framework/1.2.1
 
 Will upload to Maven later, once I am fully done and have more time
