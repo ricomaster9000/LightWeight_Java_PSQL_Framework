@@ -25,9 +25,18 @@ public class DbConnectionDetailsManager {
     }
 
     protected static String getConfigurationProperty(String keyName) {
-        String result = getProperties().getProperty(keyName);
-        if(result == null || result.isBlank()) {
+        Boolean checkEnvironmentVariablesFirst = new Boolean(getProperties().getProperty("datasource.check_environment_variables_first"));
+        String result;
+        if(checkEnvironmentVariablesFirst) {
             result = System.getenv(keyName);
+            if(result == null || result.isBlank()) {
+                result = getProperties().getProperty(keyName);
+            }
+        } else {
+            result = getProperties().getProperty(keyName);
+            if(result == null || result.isBlank()) {
+                result = System.getenv(keyName);
+            }
         }
         return result;
     }
@@ -66,7 +75,10 @@ public class DbConnectionDetailsManager {
     }
 
     protected static String getDatabaseMaxDbConnectionPoolProperty() {
-        String result = getConfigurationProperty("DB_CONNECTION_POOL_SIZE");
+        String result = getConfigurationProperty("datasource.max_db_connection_pool_size");
+        if(result == null || result.isBlank()) {
+            result = getConfigurationProperty("DB_CONNECTION_POOL_SIZE");
+        }
         if(result == null || result.isBlank()) {
             result = String.valueOf(DEFAULT_DB_CONNECTION_POOL_SIZE);
         }

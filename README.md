@@ -14,6 +14,9 @@ This is for people sick of the over-bloatedesness and over-abstraction of Hibern
 - datasource.username
 - datasource.password
 
+#### optionally set the following properties inside your properties file:
+- datasource.max_db_connection_pool_size (defaults to 40)
+
 See example package for some examples on how to use this library/small-framework
 (https://github.com/ricomaster9000/LightWeight_Java_PSQL_SQL_Framework/tree/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/example)
 
