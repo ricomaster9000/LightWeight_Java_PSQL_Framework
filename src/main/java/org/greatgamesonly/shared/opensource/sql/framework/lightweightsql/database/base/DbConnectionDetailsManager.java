@@ -25,18 +25,9 @@ public class DbConnectionDetailsManager {
     }
 
     protected static String getConfigurationProperty(String keyName) {
-        Boolean checkEnvironmentVariablesFirst = new Boolean(getProperties().getProperty("datasource.check_environment_variables_first"));
-        String result;
-        if(checkEnvironmentVariablesFirst) {
-            result = System.getenv(keyName);
-            if(result == null || result.isBlank()) {
-                result = getProperties().getProperty(keyName);
-            }
-        } else {
+        String result = System.getenv(keyName);
+        if(result == null || result.isBlank()) {
             result = getProperties().getProperty(keyName);
-            if(result == null || result.isBlank()) {
-                result = System.getenv(keyName);
-            }
         }
         return result;
     }
