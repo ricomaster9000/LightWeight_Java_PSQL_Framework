@@ -23,6 +23,8 @@ class DbConnectionPoolManager {
 
     static int managerTimerIntervalSeconds = 10;
 
+    static boolean isManagerTimerRunning = false;
+
     static int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
 
     static int timesManagerTimerRan = 0;
@@ -44,6 +46,10 @@ class DbConnectionPoolManager {
                     new TimerTask() {
                         @Override
                         public void run() {
+                            if(isManagerTimerRunning) {
+                                return;
+                            }
+                            isManagerTimerRunning = true;
                             if(timesManagerTimerRan >= timesManagerTimerMustRunBeforePoolSizeReAdjustment) {
                                 timesManagerTimerRan = 0;
                                 ArrayList<Long> totalUsedConnections = new ArrayList<>(totalUsedConnectionsEverySecondBeforeReAdjustment);
@@ -81,6 +87,7 @@ class DbConnectionPoolManager {
                                 throw new RuntimeException(e);
                             }
                             timesManagerTimerRan++;
+                            isManagerTimerRunning = false;
                         }
                     },
                     1000L, managerTimerIntervalSeconds * 1000L
