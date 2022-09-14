@@ -10,12 +10,12 @@ It uses Apache's DB Utils as its core, with more code wrapped around that but it
 This is for people sick of the over-bloatedesness and over-abstraction of Hibernate or JPA/JTA frameworks, this is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
 
 #### set the following properties inside you properties file: 
-- datasource.url (datasource.url must contain full connection path plus db name)
-- datasource.username
-- datasource.password
+- datasource.url or DATABASE_URL(must contain full connection path plus db name)
+- datasource.username or DATABASE_USERNAME
+- datasource.password or DATABASE_PASSWORD
 
 #### optionally set the following properties inside your properties file:
-- datasource.max_db_connection_pool_size OR DB_CONNECTION_POOL_SIZE (defaults to 40)
+- datasource.max_db_connection_pool_size or DB_CONNECTION_POOL_SIZE (defaults to 40)
 
 ### See example package for some examples on how to use this framework.
 
