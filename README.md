@@ -15,7 +15,7 @@ This is for people sick of the over-bloatedesness and over-abstraction of Hibern
 - datasource.password
 
 #### optionally set the following properties inside your properties file:
-- datasource.max_db_connection_pool_size (defaults to 40)
+- datasource.max_db_connection_pool_size OR DB_CONNECTION_POOL_SIZE (defaults to 40)
 
 ### See example package for some examples on how to use this framework.
 
