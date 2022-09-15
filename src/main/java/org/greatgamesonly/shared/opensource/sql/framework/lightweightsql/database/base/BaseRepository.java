@@ -488,7 +488,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return insertEntities(Arrays.stream(entitiesToInsert).collect(Collectors.toList()));
     }
 
-    public final List<E> insertEntities(List<E> entitiesToInsert) throws RepositoryException {
+    public List<E> insertEntities(List<E> entitiesToInsert) throws RepositoryException {
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         try {
