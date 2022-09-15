@@ -375,6 +375,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
         List<E> entityList = new ArrayList<>();
+        System.out.println("Query to Run: " + queryToRun);
         PooledConnection pooledConnection = null;
         try {
             pooledConnection = getConnection();
@@ -386,6 +387,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
             } else if(queryType.equals(QueryType.GET)) {
                 entityList = getRunner().query(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+                System.out.println("GET query result list size: " + entityList.size());
             }
             if(queryType.equals(QueryType.GET)) {
                 if(relationFieldToGetters == null) {
