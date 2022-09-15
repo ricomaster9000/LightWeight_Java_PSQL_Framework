@@ -49,7 +49,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s";
     private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s%s";
     private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
-    private final static String DELETE_BY_COLUMN_QUERY_UNFORMATTED = "DELETE * FROM %s WHERE %s = %s";
+    private final static String DELETE_BY_COLUMN_QUERY_UNFORMATTED = "DELETE FROM %s WHERE %s = %s";
 
     public BaseRepository() {
         DbConnectionPoolManager.startManager();
@@ -142,7 +142,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public void deleteByColumn(String columnName, Object columnValue) throws RepositoryException {
-        executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,columnValue));
+        executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
     }
 
     public List<E> getByColumn(String columnName, Object columnValue) throws RepositoryException {
