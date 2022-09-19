@@ -808,7 +808,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         String formattedQueryWithAdditionalWhere = "";
         String potentialWherePartInQuery = String.format("FROM %s WHERE",getDbEntityTableName());
         if(queryToAddTo.contains(potentialWherePartInQuery)) {
-            formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialWherePartInQuery, potentialWherePartInQuery + " " + getEntityAnnotation().addToWhereForEveryHandledGetQuery());
+            formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialWherePartInQuery, potentialWherePartInQuery + " " + getEntityAnnotation().addToWhereForEveryHandledGetQuery() + " AND");
         } else {
             String potentialNonWherePartInQuery = String.format("FROM %s",getDbEntityTableName());
             formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialNonWherePartInQuery, potentialNonWherePartInQuery + " WHERE " + getEntityAnnotation().addToWhereForEveryHandledGetQuery());

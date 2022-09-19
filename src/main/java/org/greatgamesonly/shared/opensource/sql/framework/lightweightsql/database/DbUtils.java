@@ -207,7 +207,9 @@ public class DbUtils {
 
     public static String returnPreparedValueForQuery(Object object) {
         if(object instanceof String || object instanceof java.util.Date || object.getClass().isEnum()) {
-            return "'"+ object +"'";
+            return "'" + object + "'";
+        } else if(object instanceof BaseEntity) {
+            return ((BaseEntity) object).getId().toString();
         } else {
             return object.toString();
         }
