@@ -43,6 +43,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s WHERE %s = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
+    private final static String GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s AND %s = %s";
     private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
     private final static String GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED = "SELECT * FROM %s%s";
     private final static String GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s";
@@ -147,6 +148,17 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public List<E> getByColumn(String columnName, Object columnValue) throws RepositoryException {
         return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
+    }
+
+    public List<E> getByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
+        return executeGetQuery(String.format(
+                GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                columnName,
+                returnPreparedValueForQuery(columnValue),
+                columnName2,
+                returnPreparedValueForQuery(columnValue2)
+        ));
     }
 
     public E getSingleEntityByColumn(String columnName, Object columnValue) throws RepositoryException {
