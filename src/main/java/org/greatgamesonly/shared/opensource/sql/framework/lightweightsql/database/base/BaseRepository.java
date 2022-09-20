@@ -166,6 +166,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
+    public E getSingleEntityByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
+        List<E> entitiesRetrieved = getByColumns(columnName, columnValue, columnName2, columnValue2);
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
     public List<E> getByColumnGreaterAs(String columnName, Object columnValueGreaterAs) throws RepositoryException {
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED,
             getDbEntityTableName(),
