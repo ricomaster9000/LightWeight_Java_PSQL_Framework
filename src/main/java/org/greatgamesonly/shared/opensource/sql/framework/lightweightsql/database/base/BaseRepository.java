@@ -696,8 +696,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
         List<E> entityList = new ArrayList<>();
-        System.out.println("Query to Run: " + queryToRun);
-        System.out.println("QueryParams: " + Arrays.toString(queryParameters));
         PooledConnection pooledConnection = null;
         try {
             pooledConnection = getConnection();
