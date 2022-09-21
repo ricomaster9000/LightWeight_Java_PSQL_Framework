@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
+import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
 
 public class DbUtils {
     private static final Map<String, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();

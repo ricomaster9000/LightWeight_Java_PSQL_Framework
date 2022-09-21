@@ -18,7 +18,8 @@ public class LeadQuote extends BaseEntity {
     private Long leadId;
     @ColumnName("create_date")
     private Timestamp createDate;
-
+    @ColumnName("quote_document_data")
+    protected byte[] quoteDocumentData;
     @Override
     public Long getId() {
         return id;
@@ -51,5 +52,12 @@ public class LeadQuote extends BaseEntity {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public byte[] getQuoteDocumentData() {
+        return quoteDocumentData;
+    }
+    public void setQuoteDocumentData(byte[] quoteDocumentData) {
+        this.quoteDocumentData = quoteDocumentData;
     }
 }

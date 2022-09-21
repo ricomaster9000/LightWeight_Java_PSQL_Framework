@@ -6,7 +6,7 @@
 	<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 	<artifactId>lightweightsql</artifactId>
 	<url>https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework</url>
-	<version>1.2.7</version>
+	<version>1.2.8</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Lightweight Java PSQL Database interaction framework to be used effectively on lambdas running on Java, but can be used for traditional apps as well</description>
 	<licenses>
@@ -66,7 +66,7 @@
 		<dependency>
 			<groupId>com.github.ricomaster9000</groupId>
 			<artifactId>Java-Reflection-Utils</artifactId>
-			<version>1.0.21</version>
+			<version>1.0.22</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -97,7 +97,7 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
+			<!--<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.6</version>
@@ -110,7 +110,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin>-->
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
