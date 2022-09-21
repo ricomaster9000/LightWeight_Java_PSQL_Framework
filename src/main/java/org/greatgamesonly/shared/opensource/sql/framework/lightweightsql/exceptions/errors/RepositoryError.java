@@ -39,8 +39,7 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_GET_MAX_FOR_FIELD_BY_COLUMN__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00113", "Error getting max value for column by column",
             500);
-
-    public static final RepositoryError REPOSITORY_INVALID_PARAM__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00114", "Invalid SQL parameter passed to method",
+    public static final RepositoryError REPOSITORY_INVALID_PARAM__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00114", "Invalid SQL query parameter passed to method",
             500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
