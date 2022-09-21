@@ -511,7 +511,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
                             if(getterValue != null) {
-                                if(getterValue instanceof Byte[]){
+                                if(getterValue instanceof byte[]){
                                     toAppendValues.add("?");
                                     queryParams.add(getterValue);
                                 } else {
@@ -532,7 +532,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
         }
-        return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams);
+        return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
     }
 
     public final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
@@ -586,7 +586,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
                             if(getterValue != null) {
-                                if(getterValue instanceof Byte[]){
+                                if(getterValue instanceof byte[]){
                                     toAppendValues.add("?");
                                     queryParams.add(getterValue);
                                 } else {
@@ -605,7 +605,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 } else {
                     stringBuilder.append(String.format(" WHERE %s = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
                 }
-                result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams);
+                result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
             }
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, e);
