@@ -5,12 +5,10 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 
 public class RepositoryException extends Exception {
     private final RepositoryError type;
-    private Exception innerException;
 
     public RepositoryException(RepositoryError type, Exception e) {
-        super(type.getReason()+","+e.getMessage());
+        super(type.getReason()+","+e.getMessage(),e);
         this.type = type;
-        this.innerException = e;
     }
 
     public RepositoryException(RepositoryError type, String message) {
@@ -21,7 +19,6 @@ public class RepositoryException extends Exception {
     public RepositoryException(RepositoryError type, String message, Exception e) {
         super(type.getReason()+","+message,e);
         this.type = type;
-        this.innerException = e;
     }
 
     public RepositoryError getErrorType() {

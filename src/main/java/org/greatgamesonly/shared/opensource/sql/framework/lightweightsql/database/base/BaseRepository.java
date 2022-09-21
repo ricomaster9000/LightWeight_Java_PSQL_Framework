@@ -525,7 +525,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 .collect(Collectors.joining(","))
             );
             stringBuilder.append(") VALUES ");
-            int toInsertIterator = 0;
             for (E entityToInsert : entitiesToInsert) {
                 if(entityToInsert == null) {
                     continue;
@@ -551,7 +550,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 if (!entityToInsert.equals(entitiesToInsert.get(entitiesToInsert.size() - 1))) {
                     stringBuilder.append(",");
                 }
-                toInsertIterator++;
             }
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
@@ -829,10 +827,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             formattedQueryWithAdditionalWhere = queryToAddTo.replaceFirst(potentialNonWherePartInQuery, potentialNonWherePartInQuery + " WHERE " + getEntityAnnotation().addToWhereForEveryHandledGetQuery());
         }
         return formattedQueryWithAdditionalWhere;
-    }
-
-    private String addWordAfterWords(String whereToAddWordTo, String wordToAdd, String afterWhichWordsOrWordsToAdd) {
-        return whereToAddWordTo.replaceFirst(afterWhichWordsOrWordsToAdd, afterWhichWordsOrWordsToAdd + " " + wordToAdd);
     }
 
 }
