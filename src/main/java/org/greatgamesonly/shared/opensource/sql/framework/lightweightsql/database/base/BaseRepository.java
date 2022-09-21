@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
+import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionPoolManager.connectionPoolInUseStatuses;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR;

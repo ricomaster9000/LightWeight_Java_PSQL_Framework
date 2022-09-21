@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.greatgamesonly.reflection.utils.ReflectionUtils.*;
+import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.callReflectionMethodQuick;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getManyToOneRefIdRelationFieldToGetter;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getManyToOneRelationFieldToGetters;
 
