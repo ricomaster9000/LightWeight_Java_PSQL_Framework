@@ -717,9 +717,17 @@ public abstract class BaseRepository<E extends BaseEntity> {
         try {
             pooledConnection = getConnection();
             if(queryType.equals(QueryType.INSERT)) {
-                entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+                if(queryParameters != null && queryParameters.length > 0) {
+                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+                } else {
+                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
+                }
             } else if(queryType.equals(QueryType.UPDATE)) {
-                entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
+                if(queryParameters != null && queryParameters.length > 0) {
+                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
+                } else {
+                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
+                }
             } else if(queryType.equals(QueryType.DELETE)) {
                 getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
             } else if(queryType.equals(QueryType.GET)) {
