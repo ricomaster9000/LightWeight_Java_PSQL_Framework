@@ -429,75 +429,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
         executeQuery(queryToRun, QueryType.DELETE, null,queryParameters);
     }
 
-    private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
-        List<E> entityList = new ArrayList<>();
-        PooledConnection pooledConnection = null;
-        try {
-            pooledConnection = getConnection();
-            if(queryType.equals(QueryType.INSERT)) {
-                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
-            } else if(queryType.equals(QueryType.UPDATE)) {
-                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
-            } else if(queryType.equals(QueryType.DELETE)) {
-                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
-            } else if(queryType.equals(QueryType.GET)) {
-                entityList = getRunner().query(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
-            }
-            if(queryType.equals(QueryType.GET)) {
-                if(relationFieldToGetters == null) {
-                    relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
-                }
-                if(!relationFieldToGetters.isEmpty()) {
-                    // Optimize relation get queries to be quicker - BEGIN
-                    HashMap<Long, E> entityHashMap = new HashMap<>();
-                    Long minId = 0L;
-                    Long maxId = 0L;
-                    for (E entity : entityList) {
-                        if (minId == null) {
-                            minId = entity.getId();
-                        }
-                        if (maxId == null) {
-                            maxId = entity.getId();
-                        }
-                        if (entity.getId() < minId) {
-                            minId = entity.getId();
-                        }
-                        if (entity.getId() > maxId) {
-                            maxId = entity.getId();
-                        }
-                        entityHashMap.put(entity.getId(), entity);
-                    }
-                    // Optimize relation get queries to be quicker - END
-                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
-                        if (dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
-                            continue; // Handled in the BaseBeanListHandler
-                        }
-                        BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumn(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
-                        for (BaseEntity relationEntity : toRelationEntities) {
-                            E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethodQuick(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
-                            callReflectionMethodQuick(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
-                        }
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            if(e.getSQLState() != null && e.getSQLState().startsWith("23505")) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
-            }
-            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL_SQL__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
-        } catch (RepositoryException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
-        } finally {
-            if(pooledConnection != null) {
-                connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(), false);
-            }
-        }
-        return entityList;
-    }
-
     protected ResultSet executeQueryRaw(String queryToRun) throws RepositoryException {
         ResultSet entityList = null;
         PooledConnection pooledConnection = null;
@@ -545,6 +476,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public List<E> insertEntities(List<E> entitiesToInsert) throws RepositoryException {
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
+        List<Object> queryParams = new ArrayList<>();
         try {
             if(entitiesToInsert == null || entitiesToInsert.size() <= 0) {
                 return new ArrayList<>();
@@ -578,7 +510,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
-                            toAppendValues.add((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null);
+                            if(getterValue != null) {
+                                if(getterValue instanceof Byte[]){
+                                    toAppendValues.add("?");
+                                    queryParams.add(getterValue);
+                                } else {
+                                    toAppendValues.add(returnPreparedValueForQuery(getterValue));
+                                }
+                            }
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
@@ -593,7 +532,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
         }
-        return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters);
+        return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams);
     }
 
     public final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
@@ -620,6 +559,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
+        List<Object> queryParams = new ArrayList<>();
         try {
             if(entitiesToUpdate == null || entitiesToUpdate.size() <= 0) {
                 return new ArrayList<>();
@@ -645,6 +585,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
+                            if(getterValue != null) {
+                                if(getterValue instanceof Byte[]){
+                                    toAppendValues.add("?");
+                                    queryParams.add(getterValue);
+                                } else {
+                                    toAppendValues.add(returnPreparedValueForQuery(getterValue));
+                                }
+                            }
                             toAppendValues.add(dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null));
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -657,7 +605,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 } else {
                     stringBuilder.append(String.format(" WHERE %s = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
                 }
-                result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters);
+                result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams);
             }
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, e);
@@ -759,6 +707,75 @@ public abstract class BaseRepository<E extends BaseEntity> {
             throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR,e);
         }
         return relationToEntities;
+    }
+
+    private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
+        List<E> entityList = new ArrayList<>();
+        PooledConnection pooledConnection = null;
+        try {
+            pooledConnection = getConnection();
+            if(queryType.equals(QueryType.INSERT)) {
+                entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+            } else if(queryType.equals(QueryType.UPDATE)) {
+                entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
+            } else if(queryType.equals(QueryType.DELETE)) {
+                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
+            } else if(queryType.equals(QueryType.GET)) {
+                entityList = getRunner().query(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
+            }
+            if(queryType.equals(QueryType.GET)) {
+                if(relationFieldToGetters == null) {
+                    relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
+                }
+                if(!relationFieldToGetters.isEmpty()) {
+                    // Optimize relation get queries to be quicker - BEGIN
+                    HashMap<Long, E> entityHashMap = new HashMap<>();
+                    Long minId = 0L;
+                    Long maxId = 0L;
+                    for (E entity : entityList) {
+                        if (minId == null) {
+                            minId = entity.getId();
+                        }
+                        if (maxId == null) {
+                            maxId = entity.getId();
+                        }
+                        if (entity.getId() < minId) {
+                            minId = entity.getId();
+                        }
+                        if (entity.getId() > maxId) {
+                            maxId = entity.getId();
+                        }
+                        entityHashMap.put(entity.getId(), entity);
+                    }
+                    // Optimize relation get queries to be quicker - END
+                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
+                        if (dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
+                            continue; // Handled in the BaseBeanListHandler
+                        }
+                        BaseRepository<? extends BaseEntity> relationEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                        List<? extends BaseEntity> toRelationEntities = relationEntityRepo.getAllByMinAndMaxAndColumn(minId, maxId, dbEntityColumnToFieldToGetter.getReferenceToColumnName(), dbEntityColumnToFieldToGetter.getAdditionalQueryToAdd());
+                        for (BaseEntity relationEntity : toRelationEntities) {
+                            E entityToSetToManyRelationsOn = entityHashMap.get((Long) callReflectionMethodQuick(relationEntity, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldGetterMethodName()));
+                            callReflectionMethodQuick(entityToSetToManyRelationsOn, dbEntityColumnToFieldToGetter.getSetterMethodName(), new Object[]{relationEntity}, dbEntityColumnToFieldToGetter.getMethodParamTypes());
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            if(e.getSQLState() != null && e.getSQLState().startsWith("23505")) {
+                throw new RepositoryException(RepositoryError.REPOSITORY_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
+            }
+            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL_SQL__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);
+        } catch (RepositoryException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_GENERAL__ERROR, e.getMessage() + " non sql error", e);
+        } finally {
+            if(pooledConnection != null) {
+                connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(), false);
+            }
+        }
+        return entityList;
     }
 
     protected PooledConnection getConnection() throws SQLException {
