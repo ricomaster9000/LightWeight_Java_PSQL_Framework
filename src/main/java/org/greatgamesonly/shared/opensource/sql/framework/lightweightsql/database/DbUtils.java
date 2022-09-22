@@ -141,10 +141,11 @@ public class DbUtils {
                 }
                 if(dbEntityColumnToFieldToGetter.getSetterMethodName() == null || dbEntityColumnToFieldToGetter.getGetterMethodName() == null) {
                     throw new IntrospectionException(
-                            String.format("getter and setter methods could not be determined for field %s for class %s, please check if standard getter and setter methods exist for this field",
-                                field.getName(),
-                                entityClass
-                            ));
+                        String.format("getter and setter methods could not be determined for field %s for class %s, please check if standard getter and setter methods exist for this field",
+                            field.getName(),
+                            entityClass
+                        )
+                    );
                 }
                 dbEntityColumnToFieldToGetters.put(field.getName(),dbEntityColumnToFieldToGetter);
             }
@@ -194,10 +195,6 @@ public class DbUtils {
         return result;
     }
 
-    public static String getOneToOneRefFromRelationColumnToFieldToGetter_SetterMethod(Class<?> entityClass, DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) throws IntrospectionException {
-        return getOneToOneRefFromRelationColumnToFieldToGetter(entityClass, dbEntityColumnToFieldToGetter).getSetterMethodName();
-    }
-
     public static Map<String, String> getColumnsToFieldsMap(Class<?> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass)
                 .stream()
@@ -206,7 +203,12 @@ public class DbUtils {
     }
 
     public static String returnPreparedValueForQuery(Object object) {
-        if(object instanceof String || object instanceof java.util.Date || object.getClass().isEnum()) {
+        if(object instanceof String ||
+           object instanceof java.util.Date ||
+           object.getClass().isEnum() ||
+           object instanceof Character ||
+           object instanceof Calendar
+        ) {
             return "'" + object + "'";
         } else if(object instanceof BaseEntity) {
             return ((BaseEntity) object).getId().toString();

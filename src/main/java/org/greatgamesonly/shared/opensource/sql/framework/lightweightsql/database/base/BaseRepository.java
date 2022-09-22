@@ -700,19 +700,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         try {
             pooledConnection = getConnection();
             if(queryType.equals(QueryType.INSERT)) {
-                if(queryParameters != null && queryParameters.length > 0) {
-                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
-                } else {
-                    entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
-                }
+                entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.UPDATE)) {
-                if(queryParameters != null && queryParameters.length > 0) {
-                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
-                } else {
-                    entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler()).stream().flatMap(List::stream).collect(Collectors.toList());
-                }
+                entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
             } else if(queryType.equals(QueryType.DELETE)) {
-                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler());
+                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.GET)) {
                 entityList = getRunner().query(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             }
