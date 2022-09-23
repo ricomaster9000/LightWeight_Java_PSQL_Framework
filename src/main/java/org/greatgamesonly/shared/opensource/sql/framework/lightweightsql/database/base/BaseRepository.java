@@ -133,9 +133,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getAllByMinAndMaxAndColumn(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(maxId);
-        validateColumnNameParam(minId);
+        validateColumnNameParam(columnName, maxId, maxId);
         return executeGetQuery("SELECT * FROM " + getDbEntityTableName() +
                 " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
                 " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
@@ -157,8 +155,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(columnName2);
+        validateColumnNameParam(columnName, columnName2);
         return executeGetQuery(String.format(
                 GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
@@ -200,8 +197,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnGreaterAsOrderByColumn(String columnName, Object columnValueGreaterAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(columnNameOrderBy);
+        validateColumnNameParam(columnName, columnNameOrderBy);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
                 columnName,
@@ -212,8 +208,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnLesserAsOrderByColumn(String columnName, Object columnValueLesserAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(columnNameOrderBy);
+        validateColumnNameParam(columnName, columnNameOrderBy);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
                 columnName,
@@ -239,8 +234,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(orderByColumn);
+        validateColumnNameParam(columnName, orderByColumn);
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
@@ -263,8 +257,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Long getMaxValueForColumnByColumn(String maxColumnName, String byColumnName, String byColumnValue) throws RepositoryException {
-        validateColumnNameParam(maxColumnName);
-        validateColumnNameParam(byColumnName);
+        validateColumnNameParam(maxColumnName, byColumnName);
         try {
             long countTotal;
             ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED,
@@ -301,8 +294,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
-        validateColumnNameParam(columnName);
-        validateColumnNameParam(columnName2);
+        validateColumnNameParam(columnName, columnName2);
         try {
             long countTotal;
             ResultSet resultSet = executeQueryRaw(String.format(
@@ -871,14 +863,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return formattedQueryWithAdditionalWhere;
     }
 
-    private static void validateColumnNameParam(Object columnNameParam) throws RepositoryException {
-        if(columnNameParam instanceof String) {
-            String paramStr = columnNameParam.toString();
-            if (paramStr.contains("(") ||
-                paramStr.contains(")") ||
-                Arrays.stream(sqlPsqlKnownQueryParts.values()).anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString()))
-            ) {
-                throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
+    private static void validateColumnNameParam(Object... columnNameParams) throws RepositoryException {
+        for(Object columnNameParam : columnNameParams) {
+            if (columnNameParam instanceof String) {
+                String paramStr = columnNameParam.toString();
+                if (paramStr.contains("(") ||
+                        paramStr.contains(")") ||
+                        Arrays.stream(sqlPsqlKnownQueryParts.values()).anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString()))
+                ) {
+                    throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
+                }
             }
         }
     }
