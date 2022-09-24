@@ -15,7 +15,7 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_PREPARE_INSERT__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102b", "Error preparing insert-entity-query-and-related-info",
             500);
-    public static final RepositoryError REPOSITORY_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102c", "Error inserting entity into database because inserted data violates a unique db constraint",
+    public static final RepositoryError REPOSITORY_UNIQUE_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00102c", "Error executing query because query result violates a unique db constraint",
             500);
     public static final RepositoryError REPOSITORY_PREPARE_CLASS__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00103", "Error getting repository class data ready",
             500);
@@ -40,6 +40,10 @@ public class RepositoryError extends CustomError {
     public static final RepositoryError REPOSITORY_GET_MAX_FOR_FIELD_BY_COLUMN__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00113", "Error getting max value for column by column",
             500);
     public static final RepositoryError REPOSITORY_INVALID_PARAM__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00114", "Invalid SQL query parameter passed to method",
+            500);
+    public static final RepositoryError REPOSITORY_NOT_NULL_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00115", "Error executing query because of violating a not_null db constraint, value for column cannot be null",
+            500);
+    public static final RepositoryError REPOSITORY_FOREIGN_KEY_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00116", "Error executing query because of violating a foreign key db constraint",
             500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
