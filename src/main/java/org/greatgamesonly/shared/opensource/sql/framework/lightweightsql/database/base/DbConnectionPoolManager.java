@@ -21,19 +21,19 @@ class DbConnectionPoolManager {
 
     private static Timer dbConnectionPoolMonitorTimer;
 
-    private static int managerTimerIntervalSeconds = 10;
+    private static final int managerTimerIntervalSeconds = 10;
 
     private static boolean isManagerTimerRunning = false;
 
-    private static int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
+    private static final int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
 
     private static int timesManagerTimerRan = 0;
 
-    private static ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
+    private static final ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
 
     private static int currentMaxDbConnectionPoolSize;
 
-    protected static Timer startManager() {
+    protected static void startManager() {
         if(managerTimer == null) {
             currentMaxDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
             try {
@@ -52,9 +52,8 @@ class DbConnectionPoolManager {
                             isManagerTimerRunning = true;
                             if(timesManagerTimerRan >= timesManagerTimerMustRunBeforePoolSizeReAdjustment) {
                                 timesManagerTimerRan = 0;
-                                int averageActiveConnectionsInPast = Double.valueOf(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
+                                currentMaxDbConnectionPoolSize = Double.valueOf(Math.ceil(totalUsedConnectionsEverySecondBeforeReAdjustment.stream().mapToDouble(a -> a)
                                         .average().orElse(0D))+1D).intValue();
-                                currentMaxDbConnectionPoolSize = averageActiveConnectionsInPast;
                                 if(currentMaxDbConnectionPoolSize > getDatabaseMaxDbConnectionPool()) {
                                     currentMaxDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
                                 }
@@ -112,7 +111,6 @@ class DbConnectionPoolManager {
             );
             dbConnectionPoolMonitorTimer = timer;
         }
-        return managerTimer;
     }
 
     private static List<PooledConnection> getConnectionPool() {
@@ -157,7 +155,6 @@ class DbConnectionPoolManager {
         try {
             return con != null && !con.isClosed();
         } catch (SQLException ignored) {}
-
         return false;
     }
 

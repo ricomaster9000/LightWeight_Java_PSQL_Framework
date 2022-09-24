@@ -57,6 +57,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         DbConnectionPoolManager.startManager();
     }
 
+    @SuppressWarnings({"unchecked"})
     public Class<E> getDbEntityClass() {
         if(dbEntityClass == null) {
             dbEntityClass = (Class<E>) getRepositoryAnnotation().dbEntityClass();
@@ -97,6 +98,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityAnnotation;
     }
 
+    @SuppressWarnings({"unchecked"})
     public Class<E[]> getDbEntityArrayClass() {
         if(dbEntityArrayClass == null) {
             dbEntityArrayClass = (Class<E[]>) Array.newInstance(getDbEntityClass(),0).getClass();
@@ -178,53 +180,48 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public List<E> getByColumnGreaterAs(String columnName, Object columnValueGreaterAs) throws RepositoryException {
         validateColumnNameParam(columnName);
-        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED,
+        return executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED,
             getDbEntityTableName(),
                 returnFormattedColumnNameOrTableName(columnName),
             returnPreparedValueForQuery(columnValueGreaterAs)
         ));
-        return entitiesRetrieved;
     }
 
     public List<E> getByColumnLesserAs(String columnName, Object columnValueLesserAs) throws RepositoryException {
         validateColumnNameParam(columnName);
-        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED,
+        return executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
                 returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueLesserAs)
         ));
-        return entitiesRetrieved;
     }
 
     public List<E> getByColumnGreaterAsOrderByColumn(String columnName, Object columnValueGreaterAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
         validateColumnNameParam(columnName, columnNameOrderBy);
-        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
+        return executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
                 returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueGreaterAs),
                 orderBy.getQueryEquivalent(columnNameOrderBy)
         ));
-        return entitiesRetrieved;
     }
 
     public List<E> getByColumnLesserAsOrderByColumn(String columnName, Object columnValueLesserAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
         validateColumnNameParam(columnName, columnNameOrderBy);
-        List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED,
+        return executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
                 returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueLesserAs),
                 orderBy.getQueryEquivalent(columnNameOrderBy)
         ));
-        return entitiesRetrieved;
     }
 
     public List<E> getByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
         validateColumnNameParam(columnName);
-        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
+        return executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + returnFormattedColumnNameOrTableName(columnName) + " = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
-        return entitiesRetrieved;
     }
 
     public E getSingleEntityByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
@@ -235,11 +232,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public List<E> getByColumnOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
         validateColumnNameParam(columnName, orderByColumn);
-        List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
+        return executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + columnName + " = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(orderByColumn));
-        return entitiesRetrieved;
     }
 
     public Long getMaxValueForColumn(String maxColumnName) throws RepositoryException {
