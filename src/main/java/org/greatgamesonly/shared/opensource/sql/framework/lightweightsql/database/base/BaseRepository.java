@@ -147,19 +147,19 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public void deleteByColumn(String columnName, Object columnValue) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue);
+        validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
         executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),returnFormattedColumnNameOrTableName(columnName),returnPreparedValueForQuery(columnValue)));
     }
 
     public List<E> getByColumn(String columnName, Object columnValue) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue);
+        validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
         return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),returnFormattedColumnNameOrTableName(columnName),returnPreparedValueForQuery(columnValue)));
     }
 
     public List<E> getByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue, columnValue2);
+        validateSqlQueryParam(true, new Object[]{columnValue, columnValue2});
         validateSqlQueryParam(columnName, columnName2);
         return executeGetQuery(String.format(
                 GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED,
@@ -192,7 +192,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnLesserAs(String columnName, Object columnValueLesserAs) throws RepositoryException {
-        validateSqlQueryParam(true, columnValueLesserAs);
+        validateSqlQueryParam(true, new Object[]{columnValueLesserAs});
         validateSqlQueryParam(columnName);
         return executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
@@ -202,7 +202,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnGreaterAsOrderByColumn(String columnName, Object columnValueGreaterAs, String columnNameOrderBy, OrderBy orderBy) throws RepositoryException {
-        validateSqlQueryParam(true, columnValueGreaterAs);
+        validateSqlQueryParam(true, new Object[]{columnValueGreaterAs});
         validateSqlQueryParam(columnName, columnNameOrderBy);
         return executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
@@ -224,7 +224,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> getByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue);
+        validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
         return executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + returnFormattedColumnNameOrTableName(columnName) + " = " +
@@ -233,14 +233,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public E getSingleEntityByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue);
+        validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
         List<E> entitiesRetrieved = getByColumnOrderByPrimaryKey(columnName, columnValue, descOrAsc);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
     public List<E> getByColumnOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
-        validateSqlQueryParam(true, columnValue);
+        validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName, orderByColumn);
         return executeGetQuery("SELECT * FROM " +
                 getDbEntityTableName() + " WHERE " + columnName + " = " +
@@ -263,7 +263,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Long getMaxValueForColumnByColumn(String maxColumnName, String byColumnName, String byColumnValue) throws RepositoryException {
-        validateSqlQueryParam(true, byColumnValue);
+        validateSqlQueryParam(true, new Object[]{byColumnValue});
         validateSqlQueryParam(maxColumnName, byColumnName);
         try {
             long countTotal;
@@ -283,7 +283,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
-        validateSqlQueryParam(true, columnKey);
+        validateSqlQueryParam(true, new Object[]{columnKey});
         validateSqlQueryParam(columnName);
         try {
             long countTotal;
@@ -302,7 +302,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public Long countByColumns(String columnName, Object columnKey, String columnName2, Object columnKey2) throws RepositoryException {
-        validateSqlQueryParam(true, columnKey, columnKey2);
+        validateSqlQueryParam(true, new Object[]{columnKey, columnKey2});
         validateSqlQueryParam(columnName, columnName2);
         try {
             long countTotal;
@@ -882,11 +882,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return formattedQueryWithAdditionalWhere;
     }
 
-    private static void validateSqlQueryParam(Object... sqlQueryParams) throws RepositoryException {
+    public static void validateSqlQueryParam(Object... sqlQueryParams) throws RepositoryException {
         validateSqlQueryParam(false, sqlQueryParams);
     }
 
-    private static void validateSqlQueryParam(boolean onlyCheckForSingleQuotes, Object... sqlQueryParams) throws RepositoryException {
+    public static void validateSqlQueryParam(boolean onlyCheckForSingleQuotes, Object[] sqlQueryParams) throws RepositoryException {
         for(Object sqlQueryParam : sqlQueryParams) {
             if (sqlQueryParam instanceof String) {
                 String paramStr = sqlQueryParam.toString();
