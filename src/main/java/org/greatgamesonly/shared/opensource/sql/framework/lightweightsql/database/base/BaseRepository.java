@@ -106,7 +106,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public String getDbEntityTableName() {
         if(dbEntityTableName == null) {
-            dbEntityTableName = getEntityAnnotation().tableName();
+            dbEntityTableName = returnFormattedColumnNameOrTableName(getEntityAnnotation().tableName());
         }
         return dbEntityTableName;
     }
@@ -135,8 +135,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public List<E> getAllByMinAndMaxAndColumn(Object minId, Object maxId, String columnName, String additionalWhereQuery) throws RepositoryException {
         validateColumnNameParam(columnName, maxId, maxId);
         return executeGetQuery("SELECT * FROM " + getDbEntityTableName() +
-                " WHERE " + columnName + " >= " + returnPreparedValueForQuery(minId) +
-                " AND " + columnName + " <= " + returnPreparedValueForQuery(maxId) +
+                " WHERE " + returnFormattedColumnNameOrTableName(columnName) + " >= " + returnPreparedValueForQuery(minId) +
+                " AND " + returnFormattedColumnNameOrTableName(columnName) + " <= " + returnPreparedValueForQuery(maxId) +
                 ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
@@ -146,12 +146,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public void deleteByColumn(String columnName, Object columnValue) throws RepositoryException {
         validateColumnNameParam(columnName);
-        executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
+        executeDeleteQuery(String.format(DELETE_BY_COLUMN_QUERY_UNFORMATTED,getDbEntityTableName(),returnFormattedColumnNameOrTableName(columnName),returnPreparedValueForQuery(columnValue)));
     }
 
     public List<E> getByColumn(String columnName, Object columnValue) throws RepositoryException {
         validateColumnNameParam(columnName);
-        return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
+        return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),returnFormattedColumnNameOrTableName(columnName),returnPreparedValueForQuery(columnValue)));
     }
 
     public List<E> getByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
@@ -159,9 +159,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeGetQuery(String.format(
                 GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
-                columnName,
+                returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValue),
-                columnName2,
+                returnFormattedColumnNameOrTableName(columnName2),
                 returnPreparedValueForQuery(columnValue2)
         ));
     }
@@ -180,7 +180,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateColumnNameParam(columnName);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED,
             getDbEntityTableName(),
-            columnName,
+                returnFormattedColumnNameOrTableName(columnName),
             returnPreparedValueForQuery(columnValueGreaterAs)
         ));
         return entitiesRetrieved;
@@ -190,7 +190,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateColumnNameParam(columnName);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
-                columnName,
+                returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueLesserAs)
         ));
         return entitiesRetrieved;
@@ -200,7 +200,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateColumnNameParam(columnName, columnNameOrderBy);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
-                columnName,
+                returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueGreaterAs),
                 orderBy.getQueryEquivalent(columnNameOrderBy)
         ));
@@ -211,7 +211,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateColumnNameParam(columnName, columnNameOrderBy);
         List<E> entitiesRetrieved = executeGetQuery(String.format(GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED,
                 getDbEntityTableName(),
-                columnName,
+                returnFormattedColumnNameOrTableName(columnName),
                 returnPreparedValueForQuery(columnValueLesserAs),
                 orderBy.getQueryEquivalent(columnNameOrderBy)
         ));
@@ -221,7 +221,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public List<E> getByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
         validateColumnNameParam(columnName);
         List<E> entitiesRetrieved = executeGetQuery("SELECT * FROM " +
-                getDbEntityTableName() + " WHERE " + columnName + " = " +
+                getDbEntityTableName() + " WHERE " + returnFormattedColumnNameOrTableName(columnName) + " = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
         return entitiesRetrieved;
@@ -246,7 +246,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateColumnNameParam(maxColumnName);
         try {
             long countTotal;
-            ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_QUERY_UNFORMATTED,maxColumnName,getDbEntityTableName()));
+            ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_QUERY_UNFORMATTED,returnFormattedColumnNameOrTableName(maxColumnName),getDbEntityTableName()));
             resultSet.next();
             countTotal = resultSet.getLong("max");
             resultSet.close();
@@ -261,9 +261,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
         try {
             long countTotal;
             ResultSet resultSet = executeQueryRaw(String.format(GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED,
-                    maxColumnName,
+                    returnFormattedColumnNameOrTableName(maxColumnName),
                     getDbEntityTableName(),
-                    byColumnName,
+                    returnFormattedColumnNameOrTableName(byColumnName),
                     byColumnValue
             ));
             resultSet.next();
@@ -281,7 +281,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             long countTotal;
             ResultSet resultSet = executeQueryRaw(String.format(COUNT_BY_COLUMN_QUERY_UNFORMATTED,
                     getDbEntityTableName(),
-                    columnName,
+                    returnFormattedColumnNameOrTableName(columnName),
                     returnPreparedValueForQuery(columnKey))
             );
             resultSet.next();
@@ -300,8 +300,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
             ResultSet resultSet = executeQueryRaw(String.format(
                     COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED,
                     getDbEntityTableName(),
-                    columnName,returnPreparedValueForQuery(columnKey),
-                    columnName2,
+                    returnFormattedColumnNameOrTableName(columnName),
+                    returnPreparedValueForQuery(columnKey),
+                    returnFormattedColumnNameOrTableName(columnName2),
                     returnPreparedValueForQuery(columnKey2))
             );
             resultSet.next();
@@ -790,10 +791,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private String getPrimaryKeyDbColumnName(Class<? extends BaseEntity> dbEntityClass) throws RepositoryException {
         try {
-            return getDbEntityColumnToFieldToGetters(dbEntityClass).stream()
+            return returnFormattedColumnNameOrTableName(getDbEntityColumnToFieldToGetters(dbEntityClass).stream()
                     .filter(DbEntityColumnToFieldToGetter::isPrimaryKey)
                     .findFirst().orElseThrow(() -> new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, "unable to determine primaryKey"))
-                    .getDbColumnName();
+                    .getDbColumnName());
         } catch(IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_RUN_QUERY__ERROR,e.getMessage());
         }
@@ -827,6 +828,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         }
         public String getQueryEquivalent(String relevantFieldName) throws RepositoryException {
             validateColumnNameParam(relevantFieldName);
+            relevantFieldName = returnFormattedColumnNameOrTableName(relevantFieldName);
             switch(this) {
                 case DESC:
                 case ASC:
@@ -875,6 +877,13 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
             }
         }
+    }
+
+    private static String returnFormattedColumnNameOrTableName(String columnOrTableName) {
+        if(!columnOrTableName.equals(columnOrTableName.toLowerCase())) {
+            columnOrTableName = String.format("\"%s\"",columnOrTableName);
+        }
+        return columnOrTableName;
     }
 
 }
