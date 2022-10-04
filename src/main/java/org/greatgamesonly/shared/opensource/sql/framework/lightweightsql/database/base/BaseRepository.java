@@ -497,13 +497,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
-                            if(getterValue != null) {
-                                if(getterValue instanceof byte[]){
-                                    toAppendValues.add("?");
-                                    queryParams.add(getterValue);
-                                } else {
-                                    toAppendValues.add(returnPreparedValueForQuery(getterValue));
-                                }
+                            if(getterValue instanceof byte[]){
+                                toAppendValues.add("?");
+                                queryParams.add(getterValue);
+                            } else {
+                                toAppendValues.add(returnPreparedValueForQuery(getterValue));
                             }
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
@@ -572,13 +570,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             if(getterValue == null && dbEntityColumnToFieldToGetter.isModifyDateAutoSet()) {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
-                            if(getterValue != null) {
-                                if(getterValue instanceof byte[]){
-                                    toAppendValues.add("?");
-                                    queryParams.add(getterValue);
-                                } else {
-                                    toAppendValues.add(returnPreparedValueForQuery(getterValue));
-                                }
+                            if(getterValue instanceof byte[]){
+                                toAppendValues.add("?");
+                                queryParams.add(getterValue);
+                            } else {
+                                toAppendValues.add(returnPreparedValueForQuery(getterValue));
                             }
                             toAppendValues.add(dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null));
                         }
