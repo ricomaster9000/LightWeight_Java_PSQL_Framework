@@ -203,6 +203,10 @@ public class DbUtils {
     }
 
     public static String returnPreparedValueForQuery(Object object) {
+        if(object == null) {
+            return "NULL";
+        }
+
         if(object instanceof String ||
            object instanceof java.util.Date ||
            object.getClass().isEnum() ||
