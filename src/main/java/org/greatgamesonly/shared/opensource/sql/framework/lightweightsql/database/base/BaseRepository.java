@@ -2,6 +2,7 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 
 import org.apache.commons.dbutils.QueryRunner;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
@@ -44,6 +45,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s WHERE %s = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
+    private final static String GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s IN (%s)";
+
+    private final static String GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s IN (%s) AND %s IN (%s)";
     private final static String GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s AND %s = %s";
     private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
     private final static String GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED = "SELECT * FROM %s%s";
@@ -142,6 +146,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
+    public void deleteAll() throws RepositoryException {
+        executeDeleteQuery("DELETE FROM " + getDbEntityTableName());
+    }
+
     public void deleteById(Long id) throws RepositoryException {
         executeDeleteQuery("DELETE FROM " + getDbEntityTableName() + " WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
     }
@@ -171,6 +179,54 @@ public abstract class BaseRepository<E extends BaseEntity> {
         ));
     }
 
+    public List<E> getByColumn(String columnName, List<Object> columnValues) throws RepositoryException {
+        if(columnValues == null || columnValues.isEmpty()) {
+            return new ArrayList<>();
+        }
+        validateSqlQueryParamMultiple(true, columnValues.toArray());
+        validateSqlQueryParam(columnName);
+        return executeGetQuery(String.format(
+                GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                returnFormattedColumnNameOrTableName(columnName),
+                columnValues.stream().map(DbUtils::returnPreparedValueForQuery).collect(Collectors.joining(","))
+        ));
+    }
+
+    public List<E> getByColumns(String columnName, List<Object> columnValues, String columnName2, List<Object> columnValues2) throws RepositoryException {
+        if((columnValues == null || columnValues.isEmpty()) && (columnValues2 == null || columnValues2.isEmpty())) {
+            return new ArrayList<>();
+        }
+        if(columnValues == null) {
+            columnValues = new ArrayList<>();
+        }
+        if(columnValues2 == null) {
+            columnValues2 = new ArrayList<>();
+        }
+        validateSqlQueryParamMultiple(true, columnValues.toArray());
+        validateSqlQueryParamMultiple(true, columnValues2.toArray());
+        validateSqlQueryParam(columnName);
+
+        String columnValuesQueryPart = columnValues.stream().map(DbUtils::returnPreparedValueForQuery).collect(Collectors.joining(","));
+        if(columnValuesQueryPart.isEmpty()) {
+            columnValuesQueryPart = "NULL";
+        }
+
+        String columnValuesQueryPart2 = columnValues2.stream().map(DbUtils::returnPreparedValueForQuery).collect(Collectors.joining(","));
+        if(columnValuesQueryPart2.isEmpty()) {
+            columnValuesQueryPart2 = "NULL";
+        }
+
+        return executeGetQuery(String.format(
+                GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED,
+                getDbEntityTableName(),
+                returnFormattedColumnNameOrTableName(columnName),
+                columnValuesQueryPart,
+                returnFormattedColumnNameOrTableName(columnName2),
+                columnValuesQueryPart2
+        ));
+    }
+
     public E getSingleEntityByColumn(String columnName, Object columnValue) throws RepositoryException {
         List<E> entitiesRetrieved = getByColumn(columnName, columnValue);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
@@ -178,6 +234,16 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public E getSingleEntityByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
         List<E> entitiesRetrieved = getByColumns(columnName, columnValue, columnName2, columnValue2);
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getSingleEntityByColumn(String columnName, List<Object> columnValues) throws RepositoryException {
+        List<E> entitiesRetrieved = getByColumn(columnName, columnValues);
+        return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
+    }
+
+    public E getSingleEntityByColumns(String columnName, List<Object> columnValues, String columnName2, List<Object> columnValues2) throws RepositoryException {
+        List<E> entitiesRetrieved = getByColumns(columnName, columnValues, columnName2, columnValues2);
         return (entitiesRetrieved != null && !entitiesRetrieved.isEmpty()) ? entitiesRetrieved.get(0) : null;
     }
 
@@ -880,6 +946,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public static void validateSqlQueryParam(Object... sqlQueryParams) throws RepositoryException {
         validateSqlQueryParam(false, sqlQueryParams);
+    }
+
+    public static void validateSqlQueryParamMultiple(boolean onlyCheckForSingleQuotes, Object[] sqlQueryParams) throws RepositoryException {
+        validateSqlQueryParam(onlyCheckForSingleQuotes, sqlQueryParams);
     }
 
     public static void validateSqlQueryParam(boolean onlyCheckForSingleQuotes, Object[] sqlQueryParams) throws RepositoryException {
