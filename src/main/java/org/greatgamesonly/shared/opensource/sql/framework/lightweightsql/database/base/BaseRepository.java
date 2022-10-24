@@ -964,7 +964,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 ) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
-                if(paramStr.replace("\\'","").contains("'") /* replace all espaced single quotes with nothing check if non-escaped single quotes exist in query, throw excpetion if exists*/) {
+                 // replace all escaped single quotes with nothing then check if non-escaped single quotes exist in query, throw excpetion if exists
+                if(paramStr.replace("\\'","").contains("'")) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
             }
