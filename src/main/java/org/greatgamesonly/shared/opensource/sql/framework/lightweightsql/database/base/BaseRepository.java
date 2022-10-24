@@ -22,8 +22,7 @@ import java.util.stream.Stream;
 import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionPoolManager.connectionPoolInUseStatuses;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_DETERMINE_PRIMARY_KEY_COLUMN__ERROR;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_INVALID_PARAM__ERROR;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.*;
 
 public abstract class BaseRepository<E extends BaseEntity> {
     private Class<E> dbEntityClass;
@@ -952,6 +951,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public static void validateSqlQueryParam(boolean minimalValidate, Object[] sqlQueryParams) throws RepositoryException {
         for(Object sqlQueryParam : sqlQueryParams) {
+            if(!minimalValidate && sqlQueryParam == null) {
+                throw new RepositoryException(REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR, sqlQueryParam);
+            }
             if (sqlQueryParam instanceof String) {
                 String paramStr = sqlQueryParam.toString();
                 if(!minimalValidate) {

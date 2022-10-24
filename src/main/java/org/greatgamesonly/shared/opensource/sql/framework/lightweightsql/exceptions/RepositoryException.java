@@ -16,6 +16,11 @@ public class RepositoryException extends Exception {
         this.type = type;
     }
 
+    public RepositoryException(RepositoryError type, Object message) {
+        super(type.getReason()+","+message);
+        this.type = type;
+    }
+
     public RepositoryException(RepositoryError type, String message, Exception e) {
         super(type.getReason()+","+message,e);
         this.type = type;
