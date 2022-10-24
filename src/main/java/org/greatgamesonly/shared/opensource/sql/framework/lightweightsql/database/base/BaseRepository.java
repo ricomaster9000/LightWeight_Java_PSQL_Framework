@@ -956,12 +956,14 @@ public abstract class BaseRepository<E extends BaseEntity> {
         for(Object sqlQueryParam : sqlQueryParams) {
             if (sqlQueryParam instanceof String) {
                 String paramStr = sqlQueryParam.toString();
-                if(!onlyCheckForSingleQuotes && (paramStr.contains("(") || paramStr.contains(")") ||
-                    Arrays.stream(sqlPsqlKnownQueryParts.values()).anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString())))
+                if(!onlyCheckForSingleQuotes &&
+                   (paramStr.contains("(") ||paramStr.contains(")") /*check for subqueries*/ ||
+                    Arrays.stream(sqlPsqlKnownQueryParts.values())
+                    .anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString()))) /* check for know SQL query parts that one almost never expects as a value in a query*/
                 ) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
-                if(paramStr.replace("\\'","").contains("'")) {
+                if(paramStr.replace("\\'","").contains("'") /* replace all espaced single quotes with nothing check if non-escaped single quotes exist in query, throw excpetion if exists*/) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
             }
