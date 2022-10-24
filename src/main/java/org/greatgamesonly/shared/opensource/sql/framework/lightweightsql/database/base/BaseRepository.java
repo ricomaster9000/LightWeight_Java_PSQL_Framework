@@ -957,9 +957,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if (sqlQueryParam instanceof String) {
                 String paramStr = sqlQueryParam.toString();
                 if(!onlyCheckForSingleQuotes &&
-                   (paramStr.contains("(") ||paramStr.contains(")") /*check for subqueries*/ ||
-                    Arrays.stream(sqlPsqlKnownQueryParts.values())
-                    .anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString()))) /* check for know SQL query parts that one almost never expects as a value in a query*/
+                    /*check for subqueries*/
+                   (paramStr.contains("(") ||paramStr.contains(")") ||
+                    /*check for know SQL query parts that one almost never expects as a value in a query*/
+                    Arrays.stream(sqlPsqlKnownQueryParts.values()).anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString())))
                 ) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
