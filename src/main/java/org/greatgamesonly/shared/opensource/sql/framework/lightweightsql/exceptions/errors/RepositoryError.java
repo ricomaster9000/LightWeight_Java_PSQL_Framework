@@ -45,6 +45,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_FOREIGN_KEY_CONSTRAINT_VIOLATION_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00116", "Error executing query because of violating a foreign key db constraint",
             500);
+    public static final RepositoryError REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00117", "Invalid SQL query parameter passed to method, column name parameter was probably a null value",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);
