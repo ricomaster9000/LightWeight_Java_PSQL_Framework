@@ -951,6 +951,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public static void validateSqlQueryParam(boolean minimalValidate, Object[] sqlQueryParams) throws RepositoryException {
         for(Object sqlQueryParam : sqlQueryParams) {
+            // minimalValidate when set to true is mostly used to validate non-query-value params like columnNames and tableNames etc.
             if(!minimalValidate && sqlQueryParam == null) {
                 throw new RepositoryException(REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR, sqlQueryParam);
             }
