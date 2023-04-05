@@ -1,8 +1,8 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
 
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.*;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.*;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseEntity;
 
 import java.sql.Timestamp;
 import java.util.List;

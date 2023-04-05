@@ -1,4 +1,6 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
+
+import org.greatgamesonly.opensource.utils.resourceutils.ResourceUtils;
 
 import java.util.HashMap;
 import java.util.Properties;
@@ -24,51 +26,43 @@ public class DbConnectionDetailsManager {
         return Integer.parseInt(getDbConnectionDetails().get("DB_CONNECTION_POOL_SIZE"));
     }
 
-    protected static String getConfigurationProperty(String keyName) {
-        String result = System.getenv(keyName);
-        if(result == null || result.isBlank()) {
-            result = getProperties().getProperty(keyName);
-        }
-        return result;
-    }
-
     protected static String getDatabaseUrl() {
-        String result = getConfigurationProperty("datasource.url");
+        String result = getProperties().getProperty("datasource.url");
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("quarkus.datasource.url");
+            result = getProperties().getProperty("quarkus.datasource.url");
         }
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("DATABASE_URL");
+            result = getProperties().getProperty("DATABASE_URL");
         }
         return result;
     }
 
     protected static String getDatabaseUsername() {
-        String result = getConfigurationProperty("datasource.username");
+        String result = getProperties().getProperty("datasource.username");
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("quarkus.datasource.username");
+            result = getProperties().getProperty("quarkus.datasource.username");
         }
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("DATABASE_USERNAME");
+            result = getProperties().getProperty("DATABASE_USERNAME");
         }
         return result;
     }
 
     protected static String getDatabasePassword() {
-        String result = getConfigurationProperty("datasource.password");
+        String result = getProperties().getProperty("datasource.password");
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("quarkus.datasource.password");
+            result = getProperties().getProperty("quarkus.datasource.password");
         }
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("DATABASE_PASSWORD");
+            result = getProperties().getProperty("DATABASE_PASSWORD");
         }
         return result;
     }
 
     protected static String getDatabaseMaxDbConnectionPoolProperty() {
-        String result = getConfigurationProperty("datasource.max_db_connection_pool_size");
+        String result = getProperties().getProperty("datasource.max_db_connection_pool_size");
         if(result == null || result.isBlank()) {
-            result = getConfigurationProperty("DB_CONNECTION_POOL_SIZE");
+            result = getProperties().getProperty("DB_CONNECTION_POOL_SIZE");
         }
         if(result == null || result.isBlank()) {
             result = String.valueOf(DEFAULT_DB_CONNECTION_POOL_SIZE);
@@ -76,31 +70,11 @@ public class DbConnectionDetailsManager {
         return result;
     }
 
-    public static Properties loadPropertiesFile() {
-        Properties result = new Properties();
-        try {
-            result.load(getContextClassLoader().getResourceAsStream("config.properties"));
-        } catch (Exception ignore) {}
-        if(result.isEmpty()) {
-            try {
-                result.load(getContextClassLoader().getResourceAsStream("application.properties"));
-            } catch (Exception ignore) {}
-        }
-        if(result.isEmpty()) {
-            throw new RuntimeException("Unable to pull properties file, check if you have one set");
-        }
-        return result;
-    }
-
     protected static Properties getProperties() {
         if(properties == null || properties.isEmpty()) {
-            properties = loadPropertiesFile();
+            properties = ResourceUtils.getProperties();
         }
         return properties;
-    }
-
-    private static ClassLoader getContextClassLoader() {
-        return Thread.currentThread().getContextClassLoader();
     }
 
 }

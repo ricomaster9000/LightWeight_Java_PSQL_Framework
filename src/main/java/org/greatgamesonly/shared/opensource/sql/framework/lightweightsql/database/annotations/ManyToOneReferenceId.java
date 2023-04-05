@@ -1,6 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
-
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
