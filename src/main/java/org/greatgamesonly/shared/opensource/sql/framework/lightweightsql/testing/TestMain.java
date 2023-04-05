@@ -37,7 +37,7 @@ public class TestMain {
 
             System.out.println("TESTS - remove all remaining data");
         } catch(Exception e) {
-            throw new java.lang.RuntimeException(e);
+            throw new RuntimeException(e);
         }
 
         System.out.println("TESTS - END");
