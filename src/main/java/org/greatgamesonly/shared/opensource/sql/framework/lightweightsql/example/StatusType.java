@@ -1,9 +1,9 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.ColumnName;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.PrimaryKey;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.ColumnName;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.PrimaryKey;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Entity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseEntity;
 
 @Entity(tableName = "status_type", repositoryClass = StatusTypeRepository.class)
 class StatusType extends BaseEntity {

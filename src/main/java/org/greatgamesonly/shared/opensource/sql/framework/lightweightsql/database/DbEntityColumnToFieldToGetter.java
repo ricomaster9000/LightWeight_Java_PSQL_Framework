@@ -1,7 +1,5 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseEntity;
-
 public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;

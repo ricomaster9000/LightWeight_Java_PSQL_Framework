@@ -1,7 +1,7 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.BaseRepository;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Repository;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseRepository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 
 import java.sql.ResultSet;
@@ -70,23 +70,5 @@ class LeadRepository extends BaseRepository<Lead> {
     @Override
     public Long countByColumn(String columnName, Object columnKey) throws RepositoryException {
         return super.countByColumn(columnName, columnKey);
-    }
-
-    public Lead insertOrUpdateCustom(Lead entity) throws RepositoryException {
-        Lead lead = entity.getContactId() != null ? getById(entity.getContactId()) : null;
-        if(lead == null) {
-            lead = insertEntities(entity).get(0);
-        } else {
-            lead.setStatusId(entity.getStatusId());
-            lead.setUcid(entity.getUcid());
-            lead.setContactTypeId(entity.getContactTypeId());
-            lead.setFirstName(entity.getFirstName());
-            lead.setSurname(entity.getSurname());
-            lead.setPhoneNumber(entity.getPhoneNumber());
-            lead.setCivilRegNo(entity.getCivilRegNo());
-            lead.setConnexId(entity.getConnexId());
-            lead = updateEntities(lead).get(0);
-        }
-        return lead;
     }
 }

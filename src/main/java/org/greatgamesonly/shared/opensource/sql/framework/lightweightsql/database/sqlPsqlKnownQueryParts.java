@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
 public enum sqlPsqlKnownQueryParts {
     SELECT(),

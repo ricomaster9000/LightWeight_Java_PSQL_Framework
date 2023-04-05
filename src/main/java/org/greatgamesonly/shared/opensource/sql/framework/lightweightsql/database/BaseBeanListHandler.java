@@ -1,13 +1,11 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
 
 import org.apache.commons.dbutils.BasicRowProcessor;
 import org.apache.commons.dbutils.BeanProcessor;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Entity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 
 import java.beans.IntrospectionException;

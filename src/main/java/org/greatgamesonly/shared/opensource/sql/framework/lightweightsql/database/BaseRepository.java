@@ -1,10 +1,8 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
 import org.apache.commons.dbutils.QueryRunner;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbEntityColumnToFieldToGetter;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Entity;
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.Repository;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Entity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError;
 
@@ -21,7 +19,7 @@ import java.util.stream.Stream;
 
 import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.*;
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionPoolManager.connectionPoolInUseStatuses;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionPoolManager.connectionPoolInUseStatuses;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.*;
 
 public abstract class BaseRepository<E extends BaseEntity> {

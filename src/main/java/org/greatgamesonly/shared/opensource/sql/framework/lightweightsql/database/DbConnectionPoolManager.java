@@ -1,13 +1,12 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base;
-
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.base.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
+
 
 class DbConnectionPoolManager {
 
