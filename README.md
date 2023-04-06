@@ -17,10 +17,7 @@ This is for people sick of the over-bloatedesness and over-abstraction of Hibern
 #### optionally set the following properties inside your properties file:
 - datasource.max_db_connection_pool_size or DB_CONNECTION_POOL_SIZE (defaults to 40)
 
-### See example package for some examples on how to use this framework.
-
-example code (with tests in TestMain Class):
-(https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/tree/main/testing/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/testing)
+### example code (with tests in TestMain Class):(https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/tree/main/testing/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/testing)
 
 Also, every public method in the BaseRepository class is usable for every defined Repository class, these come available from the start, there are many methods (in  https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/blob/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/database/base/BaseRepository.java)
 
