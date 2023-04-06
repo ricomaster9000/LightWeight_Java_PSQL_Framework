@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing.endtoend;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
 
 
 
