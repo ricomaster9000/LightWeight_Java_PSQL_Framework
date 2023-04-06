@@ -20,7 +20,7 @@ This is for people sick of the over-bloatedesness and over-abstraction of Hibern
 ### See example package for some examples on how to use this framework.
 
 example code (with tests in TestMain Class):
-(https://github.com/ricomaster9000/LightWeight_Java_PSQL_SQL_Framework/tree/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/testing)
+(https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/tree/main/testing/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/testing)
 
 Also, every public method in the BaseRepository class is usable for every defined Repository class, these come available from the start, there are many methods (in  https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/blob/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/database/base/BaseRepository.java)
 
