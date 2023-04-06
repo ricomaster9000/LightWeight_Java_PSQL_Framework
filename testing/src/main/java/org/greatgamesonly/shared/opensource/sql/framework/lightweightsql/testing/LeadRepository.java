@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseRepository;
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository(dbEntityClass = Lead.class, manyToOneCacheHours = 0)
-class LeadRepository extends BaseRepository<Lead> {
+public class LeadRepository extends BaseRepository<Lead> {
 
     public LeadRepository() {}
 

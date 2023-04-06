@@ -9,6 +9,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -41,6 +42,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM \"%s\" WHERE \"%s\" = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM \"%s\" WHERE \"%s\" = %s AND \"%s\" = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
+    private final static String GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IS NOT NULL";
     private final static String GET_BY_ID_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
     private final static String GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s)";
     private final static String GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s) AND \"%s\" IN (%s)";
@@ -142,6 +144,12 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 ((additionalWhereQuery != null && !additionalWhereQuery.isBlank()) ? " AND " + additionalWhereQuery : ""));
     }
 
+    public void deleteAllNoException() {
+        try {
+            executeDeleteQuery("DELETE FROM \"" + getDbEntityTableName() + "\"");
+        } catch (RepositoryException ignore) {}
+    }
+
     public void deleteAll() throws RepositoryException {
         executeDeleteQuery("DELETE FROM \"" + getDbEntityTableName() + "\"");
     }
@@ -160,6 +168,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
         return executeGetQuery(String.format(GET_BY_COLUMN_NAME_QUERY_UNFORMATTED,getDbEntityTableName(),columnName,returnPreparedValueForQuery(columnValue)));
+    }
+
+    public List<E> getByColumnIfNotNull(String columnName) throws RepositoryException {
+        validateSqlQueryParam(columnName);
+        return executeGetQuery(String.format(GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED,getDbEntityTableName(),columnName));
     }
 
     public List<E> getByColumns(String columnName, Object columnValue, String columnName2, Object columnValue2) throws RepositoryException {
@@ -633,12 +646,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
                                 getterValue = nowDbTimestamp(dbEntityColumnToFieldToGetter.getModifyDateAutoSetTimezone());
                             }
                             if(getterValue instanceof byte[]){
-                                toAppendValues.add("?");
                                 queryParams.add(getterValue);
-                            } else {
-                                toAppendValues.add(returnPreparedValueForQuery(getterValue));
                             }
-                            toAppendValues.add(dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? returnPreparedValueForQuery(getterValue) : null));
+                            toAppendValues.add(dbEntityColumnToFieldToGetter.getDbColumnName() + " = " + ((getterValue != null) ? (getterValue instanceof byte[]) ? "?" : returnPreparedValueForQuery(getterValue) : null));
                         }
                     } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
                         throw new RepositoryException(RepositoryError.REPOSITORY_CALL_REFLECTION_METHOD__ERROR,e);
@@ -711,7 +721,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
                         if (dbEntityColumnToFieldToGetter.isForOneToOneRelation() || dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         } else {
-                            relationToEntitiesInsertedOrUpdated.addAll(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
+                            List toAdd = callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            if(toAdd != null) {
+                                relationToEntitiesInsertedOrUpdated.addAll(toAdd);
+                            }
                         }
                     }
                     if(isEmptyOrBlankCollection(relationToEntitiesInsertedOrUpdated)) {
@@ -730,7 +743,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
                             Long idToUse = relationToEntitiesInsertedOrUpdated.get(0).getId();
                             if(!dbEntityColumnToFieldToGetter.isInsertOrUpdateRelationInDbInteractions() && idToUse == null) {
-                                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
+                                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id, confirm that this entity has been persisted to database",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
                             }
                             callReflectionMethodQuick(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), idToUse, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes()[0]);
                         } else if(dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {

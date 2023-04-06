@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Repository;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseRepository;
@@ -8,7 +8,7 @@ import java.util.List;
 
 
 @Repository(dbEntityClass = LeadQuote.class)
-class LeadQuoteRepository extends BaseRepository<LeadQuote> {
+public class LeadQuoteRepository extends BaseRepository<LeadQuote> {
 
     @Override
     public List<LeadQuote> insertEntities(List<LeadQuote> entitiesToInsert) throws RepositoryException {

@@ -1,5 +1,8 @@
 package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class DbEntityColumnToFieldToGetter {
     private String dbColumnName;
     private String classFieldName;
@@ -199,6 +202,10 @@ public class DbEntityColumnToFieldToGetter {
 
     public Class<?>[] getMethodParamTypes() {
         return methodParamTypes;
+    }
+
+    public List<Class<?>> getMethodParamTypesAsList() {
+        return Arrays.asList(methodParamTypes);
     }
 
     public void setMethodParamTypes(Class<?>... methodParamTypes) {

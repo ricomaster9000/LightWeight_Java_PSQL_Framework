@@ -1,8 +1,9 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.example;
+package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
 
 
-import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.*;
+
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseEntity;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.*;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -24,11 +25,9 @@ public class Lead extends BaseEntity {
     @ColumnName("create_date")
     @DoNotUpdateInDb
     protected Timestamp createDate;
-
     @ColumnName("modify_date")
     @ModifyDateAutoSet(timezone = "UTC")
     protected Timestamp modifyDate;
-
     @ManyToOneReferenceId(columnName = "status_id", referenceToColumnName = "id")
     protected Long statusId;
     @ManyToOne(linkedDbColumnName = "status_id", toOneEntityClass = StatusType.class)
@@ -52,6 +51,9 @@ public class Lead extends BaseEntity {
     protected String processingId;
     @OneToMany(referenceToColumnName = "lead_id", toManyEntityClass = LeadQuote.class, addToWherePartInGetQuery = "create_date >= now() - INTERVAL '365 DAY'") //do not ever worry about leadQuotes older than one year
     protected List<LeadQuote> leadQuotes;
+
+    @ColumnName("attached_pdf_document_data")
+    private byte[] pdfDocumentData;
     @DBIgnore
     protected Timestamp leadReceiveDate;
     @DBIgnore
@@ -219,5 +221,13 @@ public class Lead extends BaseEntity {
 
     public void setLeadQuotes(List<LeadQuote> leadQuotes) {
         this.leadQuotes = leadQuotes;
+    }
+
+    public byte[] getPdfDocumentData() {
+        return pdfDocumentData;
+    }
+
+    public void setPdfDocumentData(byte[] pdfDocumentData) {
+        this.pdfDocumentData = pdfDocumentData;
     }
 }

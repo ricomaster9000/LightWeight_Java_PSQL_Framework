@@ -47,6 +47,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00117", "Invalid SQL query parameter passed to method, column name parameter was probably a null value",
             500);
+    public static final RepositoryError REPOSITORY_PREPARE_GET__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00118", "Error preparing get-entity-query-and-related-info",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);
