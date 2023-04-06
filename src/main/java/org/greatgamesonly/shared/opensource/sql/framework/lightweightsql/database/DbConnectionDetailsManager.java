@@ -27,42 +27,42 @@ public class DbConnectionDetailsManager {
     }
 
     protected static String getDatabaseUrl() {
-        String result = System.getProperty("datasource.url");
+        String result = ResourceUtils.getProperty("datasource.url");
         if(result == null || result.isBlank()) {
-            result = System.getProperty("quarkus.datasource.url");
+            result = ResourceUtils.getProperty("quarkus.datasource.url");
         }
         if(result == null || result.isBlank()) {
-            result = System.getProperty("DATABASE_URL");
+            result = ResourceUtils.getProperty("DATABASE_URL");
         }
         return result;
     }
 
     protected static String getDatabaseUsername() {
-        String result = System.getProperty("datasource.username");
+        String result = ResourceUtils.getProperty("datasource.username");
         if(result == null || result.isBlank()) {
-            result = System.getProperty("quarkus.datasource.username");
+            result = ResourceUtils.getProperty("quarkus.datasource.username");
         }
         if(result == null || result.isBlank()) {
-            result = System.getProperty("DATABASE_USERNAME");
+            result = ResourceUtils.getProperty("DATABASE_USERNAME");
         }
         return result;
     }
 
     protected static String getDatabasePassword() {
-        String result = System.getProperty("datasource.password");
+        String result = ResourceUtils.getProperty("datasource.password");
         if(result == null || result.isBlank()) {
-            result = System.getProperty("quarkus.datasource.password");
+            result = ResourceUtils.getProperty("quarkus.datasource.password");
         }
         if(result == null || result.isBlank()) {
-            result = System.getProperty("DATABASE_PASSWORD");
+            result = ResourceUtils.getProperty("DATABASE_PASSWORD");
         }
         return result;
     }
 
     protected static String getDatabaseMaxDbConnectionPoolProperty() {
-        String result = System.getProperty("datasource.max_db_connection_pool_size");
+        String result = ResourceUtils.getProperty("datasource.max_db_connection_pool_size");
         if(result == null || result.isBlank()) {
-            result = System.getProperty("DB_CONNECTION_POOL_SIZE");
+            result = ResourceUtils.getProperty("DB_CONNECTION_POOL_SIZE");
         }
         if(result == null || result.isBlank()) {
             result = String.valueOf(DEFAULT_DB_CONNECTION_POOL_SIZE);

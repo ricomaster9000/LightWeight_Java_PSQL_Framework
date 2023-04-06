@@ -2,6 +2,7 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testin
 
 
 
+import org.greatgamesonly.opensource.utils.resourceutils.ResourceUtils;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager;
 
 import java.util.*;
@@ -11,11 +12,11 @@ import static java.time.ZoneOffset.UTC;
 public class TestMain {
 
     public static void main(String[] args) {
-        doTests();
+        doTests(args[0],args[1],args[2]);
         System.exit(0);
     }
 
-    private static void doTests() {
+    private static void doTests(String databaseUrl, String databaseUsername, String databasePassword) {
         System.out.println("TESTS - BEGIN");
         StatusTypeRepository statusTypeRepository = null;
         LeadRepository leadRepository = null;
@@ -26,12 +27,12 @@ public class TestMain {
         try {
             System.out.println("TESTS - Setting up repositories&connection-pools and establishing connection");
 
-            //Properties properties = new Properties();
-            //properties.put("DATABASE_URL","");
-            //properties.put("DATABASE_USERNAME","");
-            //properties.put("DATABASE_PASSWORD","");
-            //properties.put("DB_CONNECTION_POOL_SIZE","5");
-            //DbConnectionDetailsManager.setProperties(properties);
+            Properties properties = new Properties();
+            properties.put("DATABASE_URL",databaseUrl == null ? ResourceUtils.getProperty("DATABASE_URL") : databaseUrl);
+            properties.put("DATABASE_USERNAME",databaseUsername == null ? ResourceUtils.getProperty("DATABASE_USERNAME") : databaseUsername);
+            properties.put("DATABASE_PASSWORD",databasePassword == null ? ResourceUtils.getProperty("DATABASE_PASSWORD") : databasePassword);
+            properties.put("DB_CONNECTION_POOL_SIZE","5");
+            DbConnectionDetailsManager.setProperties(properties);
 
             leadRepository = new LeadRepository();
             leadQuoteRepository = new LeadQuoteRepository();
