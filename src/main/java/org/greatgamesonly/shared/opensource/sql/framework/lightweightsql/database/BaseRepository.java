@@ -42,7 +42,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM \"%s\" WHERE \"%s\" = %s;";
     private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM \"%s\" WHERE \"%s\" = %s AND \"%s\" = %s;";
     private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
-    private final static String GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" != null";
+    private final static String GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IS NOT NULL";
     private final static String GET_BY_ID_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
     private final static String GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s)";
     private final static String GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s) AND \"%s\" IN (%s)";
