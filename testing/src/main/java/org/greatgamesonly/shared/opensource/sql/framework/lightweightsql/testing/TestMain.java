@@ -27,10 +27,10 @@ public class TestMain {
             System.out.println("TESTS - Setting up repositories&connection-pools and establishing connection");
 
             Properties properties = new Properties();
-            properties.put("DATABASE_URL","jdbc:postgresql://testdatabase.cmw5kvj6zl6u.eu-west-1.rds.amazonaws.com:5432/test_sql_framework");
-            properties.put("DATABASE_USERNAME","sqlframeworkTest");
-            properties.put("DATABASE_PASSWORD","Masdadasd2234234___hadfhajsd_j");
-            properties.put("DB_CONNECTION_POOL_SIZE","2");
+            //properties.put("DATABASE_URL","");
+            //properties.put("DATABASE_USERNAME","");
+            //properties.put("DATABASE_PASSWORD","");
+            properties.put("DB_CONNECTION_POOL_SIZE","5");
             DbConnectionDetailsManager.setProperties(properties);
 
             leadRepository = new LeadRepository();
