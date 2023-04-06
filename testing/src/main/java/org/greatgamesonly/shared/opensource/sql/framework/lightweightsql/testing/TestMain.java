@@ -26,12 +26,12 @@ public class TestMain {
         try {
             System.out.println("TESTS - Setting up repositories&connection-pools and establishing connection");
 
-            Properties properties = new Properties();
+            //Properties properties = new Properties();
             //properties.put("DATABASE_URL","");
             //properties.put("DATABASE_USERNAME","");
             //properties.put("DATABASE_PASSWORD","");
-            properties.put("DB_CONNECTION_POOL_SIZE","5");
-            DbConnectionDetailsManager.setProperties(properties);
+            //properties.put("DB_CONNECTION_POOL_SIZE","5");
+            //DbConnectionDetailsManager.setProperties(properties);
 
             leadRepository = new LeadRepository();
             leadQuoteRepository = new LeadQuoteRepository();
