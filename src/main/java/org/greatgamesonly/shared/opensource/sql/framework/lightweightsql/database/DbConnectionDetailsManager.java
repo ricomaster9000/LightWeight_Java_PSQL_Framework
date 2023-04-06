@@ -77,4 +77,12 @@ public class DbConnectionDetailsManager {
         return properties;
     }
 
+    public static void setProperties(Properties properties) {
+        DbConnectionDetailsManager.properties = properties;
+    }
+
+    protected static void setDatabaseMaxDbConnectionPoolSize(int newPoolSize) {
+        CONNECTION_DETAILS.put("DB_CONNECTION_POOL_SIZE", String.valueOf(newPoolSize));
+    }
+
 }
