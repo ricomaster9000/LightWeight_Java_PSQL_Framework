@@ -121,9 +121,9 @@ class DbConnectionPoolManager {
             int maxConnectionsToOpen = currentMaxDbConnectionPoolSize - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
                 Connection connection = DriverManager.getConnection(
-                        DbConnectionDetailsManager.getDbConnectionDetails().get("DatabaseUrl"),
-                        DbConnectionDetailsManager.getDbConnectionDetails().get("User"),
-                        DbConnectionDetailsManager.getDbConnectionDetails().get("Password")
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("DATABASE_URL"),
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("DATABASE_USERNAME"),
+                        DbConnectionDetailsManager.getDbConnectionDetails().get("DATABASE_PASSWORD")
                 );
                 connection.setAutoCommit(true);
                 String uniqueReference = UUID.randomUUID().toString();

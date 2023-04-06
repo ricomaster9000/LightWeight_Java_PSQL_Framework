@@ -12,9 +12,9 @@ public class DbConnectionDetailsManager {
 
     public static HashMap<String, String> getDbConnectionDetails() {
         if(CONNECTION_DETAILS.isEmpty()) {
-            CONNECTION_DETAILS.put("DatabaseUrl", getDatabaseUrl());
-            CONNECTION_DETAILS.put("User", getDatabaseUsername());
-            CONNECTION_DETAILS.put("Password", getDatabasePassword());
+            CONNECTION_DETAILS.put("DATABASE_URL", getDatabaseUrl());
+            CONNECTION_DETAILS.put("DATABASE_USERNAME", getDatabaseUsername());
+            CONNECTION_DETAILS.put("DATABASE_PASSWORD", getDatabasePassword());
             CONNECTION_DETAILS.put("DB_CONNECTION_POOL_SIZE", getDatabaseMaxDbConnectionPoolProperty());
         }
         return CONNECTION_DETAILS;
