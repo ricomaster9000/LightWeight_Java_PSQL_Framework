@@ -10,8 +10,6 @@ public class DbConnectionDetailsManager {
     private static final HashMap<String, String> CONNECTION_DETAILS = new HashMap<>();
     static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 40;
 
-    private static Properties properties;
-
     public static HashMap<String, String> getDbConnectionDetails() {
         if(CONNECTION_DETAILS.isEmpty()) {
             CONNECTION_DETAILS.put("DatabaseUrl", getDatabaseUrl());
@@ -71,7 +69,8 @@ public class DbConnectionDetailsManager {
     }
 
     public static void setProperties(Properties properties) {
-        DbConnectionDetailsManager.properties = properties;
+        for (final String name: properties.stringPropertyNames())
+            DbConnectionDetailsManager.CONNECTION_DETAILS.put(name, properties.getProperty(name));
     }
 
     protected static void setDatabaseMaxDbConnectionPoolSize(int newPoolSize) {
