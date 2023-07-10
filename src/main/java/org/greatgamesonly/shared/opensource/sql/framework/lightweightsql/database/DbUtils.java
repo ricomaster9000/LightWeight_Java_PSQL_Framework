@@ -81,8 +81,9 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
                     dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOne.class).referenceFromColumnName());
+                    dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName());
 
-                    Collection<DbEntityColumnToFieldToGetter> toOneEntityDbEntityColumnToFieldsToGetters = getDbEntityColumnToFieldToGetters(field.getType());
+                    Collection<DbEntityColumnToFieldToGetter> toOneEntityDbEntityColumnToFieldsToGetters = getDbEntityColumnToFieldToGetters(field.getAnnotation(OneToOne.class).toOneEntityClass());
 
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(toOneEntityDbEntityColumnToFieldsToGetters.stream()
                             .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName()))
@@ -92,12 +93,14 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);
                     dbEntityColumnToFieldToGetter.setToOneEntityReferenceFromColumnName(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName());
 
-                    if(toOneEntityDbEntityColumnToFieldsToGetters.stream()
-                        .noneMatch(toOneEntityDbEntityColumnToFieldsToGetter ->
-                                toOneEntityDbEntityColumnToFieldsToGetter.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getToOneEntityReferenceFromColumnName())
-                        )
-                    ) {
-                        throw new IntrospectionException(String.format("ToOneEntityReferenceFromColumnName must link to a field in %s from %s for %s",field.getType(),entityClass,field.getName()));
+                    if(toOneEntityDbEntityColumnToFieldsToGetters.stream().noneMatch(toOneEntityDbEntityColumnToFieldsToGetter -> toOneEntityDbEntityColumnToFieldsToGetter.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getToOneEntityReferenceFromColumnName())))
+                    {
+                        throw new IntrospectionException(String.format("toOneEntityReferenceFromColumnName must link to a field in %s from %s for %s",field.getType(),entityClass,field.getName()));
+                    }
+
+                    if(Arrays.stream(fields).noneMatch(f -> f.isAnnotationPresent(OneToOneReferenceId.class) && f.getAnnotation(OneToOneReferenceId.class).columnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName())))
+                    {
+                        throw new IntrospectionException(String.format("ReferenceFromColumnName %s must exist in %s",dbEntityColumnToFieldToGetter.getReferenceFromColumnName(),entityClass));
                     }
                 }
                 if(field.isAnnotationPresent(ManyToOne.class)) {
@@ -114,6 +117,12 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ManyToOneReferenceId.class).columnName());
                     dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(ManyToOneReferenceId.class).columnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(ManyToOneReferenceId.class).referenceToColumnName());
+                }
+                if(field.isAnnotationPresent(OneToOneReferenceId.class)) {
+                    dbEntityColumnToFieldToGetter.setForOneToOneReferenceId(true);
+                    dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(OneToOneReferenceId.class).columnName());
+                    dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOneReferenceId.class).columnName());
+                    dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOneReferenceId.class).referenceToColumnName());
                 }
                 if(field.isAnnotationPresent(ColumnName.class)) {
                     dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
@@ -189,7 +198,7 @@ public class DbUtils {
         DbEntityColumnToFieldToGetter result = inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter.get(entityClass.toString()+dbEntityColumnToFieldToGetter.getReferenceFromColumnName());
         if(result == null) {
             result = getDbEntityColumnToFieldToGetters(entityClass).stream()
-                    .filter(dbEntityColumnToFieldToGet ->  dbEntityColumnToFieldToGet.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName()))
+                    .filter(dbEntityColumnToFieldToGet -> dbEntityColumnToFieldToGet.isForOneToOneReferenceId() && dbEntityColumnToFieldToGet.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName()))
                     .collect(Collectors.toList()).get(0);
             inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter.put(entityClass.toString()+dbEntityColumnToFieldToGetter.getReferenceFromColumnName(),result);
         }

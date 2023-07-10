@@ -10,6 +10,7 @@ import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -484,7 +485,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     protected List<E> executeUpdateQuery(String queryToRun, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
-        return executeQuery(queryToRun, QueryType.INSERT, relationFieldToGetters, queryParameters);
+        return executeQuery(queryToRun, QueryType.UPDATE, relationFieldToGetters, queryParameters);
     }
 
     protected void executeDeleteQuery(String queryToRun, Object... queryParameters) throws RepositoryException {
@@ -515,9 +516,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityList;
     }
 
-    public final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+    private final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
         if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
-            throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
+            return new ArrayList<>();
         }
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
@@ -599,9 +600,9 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
     }
 
-    public final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
+    private final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
         if(entitiesToUpdate == null || entitiesToUpdate.isEmpty()) {
-            throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
+            return new ArrayList<>();
         }
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
@@ -619,6 +620,21 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return updateEntities(Arrays.stream(entitiesToUpdate).collect(Collectors.toList()));
     }
 
+    private final void deleteEntitiesListGeneric(List<? extends BaseEntity> deleteEntitiesGeneric) throws RepositoryException {
+        if(deleteEntitiesGeneric == null || deleteEntitiesGeneric.isEmpty()) {
+            return;
+        }
+        Object toUpdate = Array.newInstance(getDbEntityClass(),deleteEntitiesGeneric.size());
+        try {
+            for (int i = 0; i < deleteEntitiesGeneric.size(); i++) {
+                Array.set(toUpdate,i,deleteEntitiesGeneric.get(i));
+            }
+        } catch (Exception e) {
+            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_DELETE__ERROR, e.getMessage());
+        }
+        deleteEntities(getDbEntityArrayClass().cast(toUpdate));
+    }
+
     public final List<E> updateEntities(List<E> entitiesToUpdate) throws RepositoryException {
         List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
@@ -633,6 +649,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
             // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE BEGIN
             handleEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToUpdate);
+            handleEntityRelationshipDeletes(relationFieldToGetters,entitiesToUpdate);
             // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
 
             stringBuilder.append(String.format("UPDATE \"%s\" SET ", getDbEntityTableName()));
@@ -664,7 +681,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 } else {
                     stringBuilder.append(String.format(" WHERE \"%s\" = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
                 }
-                result = executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
+                executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
+                result = entitiesToUpdate;
             }
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_UPDATE_ENTITY__ERROR, e);
@@ -681,28 +699,11 @@ public abstract class BaseRepository<E extends BaseEntity> {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             if(entitiesToDelete == null || entitiesToDelete.size() <= 0) {
-                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
-            }
-            Collection<DbEntityColumnToFieldToGetter> oneToManyRelationFieldToGetters = getOneToManyRelationFieldToGetters(getDbEntityClass());
-            Collection<DbEntityColumnToFieldToGetter> oneToOneRelationFieldToGetters = getOneToOneRelationFieldToGetters(getDbEntityClass());
-
-            if(!oneToManyRelationFieldToGetters.isEmpty()) {
-                for(E entityToDelete : entitiesToDelete) {
-                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : oneToManyRelationFieldToGetters) {
-                        BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getReferenceToColumnName(), entityToDelete.getId());
-                    }
-                }
+                throw new RepositoryException(REPOSITORY_INSERT__ERROR, "null entitiesToDelete value was passed");
             }
 
-            if(!oneToOneRelationFieldToGetters.isEmpty()) {
-                for(E entityToDelete : entitiesToDelete) {
-                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : oneToOneRelationFieldToGetters) {
-                        BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
-                        toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getToOneEntityReferenceFromColumnName(), entityToDelete.getId());
-                    }
-                }
-            }
+            List<DbEntityColumnToFieldToGetter> relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
+            handleEntityRelationshipDeletes(relationFieldToGetters,entitiesToDelete);
 
             stringBuilder.append(String.format("DELETE FROM \"%s\" WHERE %s IN ( ", getDbEntityTableName(), getPrimaryKeyDbColumnName()));
             stringBuilder.append(
@@ -713,7 +714,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             stringBuilder.append(" );");
             executeDeleteQuery(stringBuilder.toString());
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_DELETE_ENTITY__ERROR, e);
+            throw new RepositoryException(REPOSITORY_DELETE_ENTITY__ERROR, e);
         }
     }
 
@@ -780,6 +781,39 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return relationToEntities;
     }
 
+    private List<?> handleEntityRelationshipDeletes(List<DbEntityColumnToFieldToGetter> relationFieldToGetters, List<E> entitiesParam) throws RepositoryException {
+        List<?> relationToEntities = new ArrayList<BaseEntity>();
+        try {
+            if (!relationFieldToGetters.isEmpty()) {
+                for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
+                    for (E entity : entitiesParam) {
+                        Object subRelationFieldValue = getFieldValue(dbEntityColumnToFieldToGetter.getClassFieldName(), entity);
+                        if (
+                            (!dbEntityColumnToFieldToGetter.isForOneToOneRelation() &&
+                             !dbEntityColumnToFieldToGetter.isForOneToManyRelation()) ||
+                            subRelationFieldValue != null
+                        ) {
+                            continue;
+                        }
+
+                        BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                        DbEntityColumnToFieldToGetter relationRefColumnToFieldToGetter = dbEntityColumnToFieldToGetter;
+                        if (dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
+                            relationRefColumnToFieldToGetter = getOneToOneRefFromRelationColumnToFieldToGetter(getDbEntityClass(), dbEntityColumnToFieldToGetter);
+                            toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getReferenceToColumnName(), entity.getId());
+                            setFieldToNull(entity, relationRefColumnToFieldToGetter.getClassFieldName());
+                        } else {
+                            toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getReferenceToColumnName(), entity.getId());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RepositoryException(REPOSITORY_DELETE_SUB_ENTITIES__ERROR,e);
+        }
+        return relationToEntities;
+    }
+
     private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
         List<E> entityList = new ArrayList<>();
         PooledConnection pooledConnection = null;
@@ -788,7 +822,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(queryType.equals(QueryType.INSERT)) {
                 entityList = getRunner().insert(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.UPDATE)) {
-                entityList = getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters).stream().flatMap(List::stream).collect(Collectors.toList());
+                getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.DELETE)) {
                 getRunner().execute(pooledConnection.getConnection(), queryToRun, getQueryResultHandler(), queryParameters);
             } else if(queryType.equals(QueryType.GET)) {

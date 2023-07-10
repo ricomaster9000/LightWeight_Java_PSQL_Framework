@@ -41,13 +41,13 @@ public class TestMain {
             leadAttachedInfoRepository = new LeadAttachedInfoRepository();
 
 
-            final Long leadTest1Id = 1L;
+            final String leadTest1ExternalReferenceId = "GHSJHKJHHSIDG";
 
             System.out.println("TESTS - Creating new entities and inserting these entities into database");
 
             Lead leadTest1 = new Lead();
-            leadTest1.setContactId(leadTest1Id);
-            leadTest1.setExternalReferenceId("GHSJHKJHHSIDG");
+            leadTest1.setContactId(1L);
+            leadTest1.setExternalReferenceId(leadTest1ExternalReferenceId);
             leadTest1.setConnexId(null);
             leadTest1.setUcid("TEST_UCID");
             leadTest1.setCreateDate(nowDbTimestamp());
@@ -162,10 +162,11 @@ public class TestMain {
 
             System.out.println("TESTS - Creating new entities for OneToOneRelationships and inserting these entities into the database");
 
-            Lead leadFetched = leadRepository.getById(leadTest1Id);
+            Lead leadFetched = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
             LeadAttachedInfo testAttachedLeadInfo = new LeadAttachedInfo(1L, leadFetched.getId(), "test_status");
             leadFetched.setLeadAttachedInfo(leadAttachedInfoRepository.insertEntity(testAttachedLeadInfo));
             Lead updatedOneToOneLead = leadRepository.insertOrUpdate(leadFetched);
+            updatedOneToOneLead = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
             if(updatedOneToOneLead.getLeadAttachedInfo() == null) {
                 throw new RuntimeException("entity updated does not have one to one entity attached to it");
             }
@@ -174,6 +175,15 @@ public class TestMain {
 
             System.out.println("TESTS - fetching entities to update with ManyToOne entities and persisting changes");
 
+            System.out.println("TESTS - fetching entities to remove oneToOne relationships and persisting changes");
+
+            Lead leadToRemoveOneToOne = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            leadToRemoveOneToOne.setLeadAttachedInfo(null);
+            leadRepository.updateEntities(leadToRemoveOneToOne);
+            leadToRemoveOneToOne = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            if(leadToRemoveOneToOne.getLeadAttachedInfo() != null && leadAttachedInfoRepository.countByColumn("info","test_status") > 0) {
+                throw new RuntimeException("entity one to one relation was not deleted");
+            }
 
             System.out.println("TESTS - fetching entities to remove oneToMany relationships and persisting changes");
 

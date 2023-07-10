@@ -53,6 +53,8 @@ public class Lead extends BaseEntity {
     protected List<LeadQuote> leadQuotes;
     @OneToOne(referenceFromColumnName = "lead_attached_info_id", toOneEntityReferenceFromColumnName = "lead_id", toOneEntityClass = LeadAttachedInfo.class)
     private LeadAttachedInfo leadAttachedInfo;
+    @OneToOneReferenceId(columnName = "lead_attached_info_id", referenceToColumnName = "id")
+    private Long leadAttachedInfoId;
     @ColumnName("attached_pdf_document_data")
     private byte[] pdfDocumentData;
     @DBIgnore
@@ -230,6 +232,14 @@ public class Lead extends BaseEntity {
 
     public void setLeadAttachedInfo(LeadAttachedInfo leadAttachedInfo) {
         this.leadAttachedInfo = leadAttachedInfo;
+    }
+
+    public Long getLeadAttachedInfoId() {
+        return leadAttachedInfoId;
+    }
+
+    public void setLeadAttachedInfoId(Long leadAttachedInfoId) {
+        this.leadAttachedInfoId = leadAttachedInfoId;
     }
 
     public byte[] getPdfDocumentData() {
