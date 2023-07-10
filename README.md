@@ -9,7 +9,7 @@ It uses Apache's DB Utils as its core, with more code wrapped around that but it
 
 This is for people sick of the over-bloatedesness and over-abstraction of Hibernate or JPA/JTA frameworks, this is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
 
-### IMPORTANT - Do not pass in more than 30000 rows/entities at a time when calling methods (unless its for delete or a get), I am not sure if the ApachaUtils core framework code has setup logic to handle this, do at your own risk or split up the calls, I will test this soon and fix it if I have to
+### IMPORTANT - Do not pass in more than 30000 rows/entities at a time when calling methods (unless its for delete or a get), I am not sure if the ApachaUtils core framework code has setup logic to handle this, do at your own risk or split up the calls, I will test this soon and fix it if I have to, 34000+- rows migth be a limit for the IN operator in PSQL
 
 #### set the following properties inside you properties file: 
 - datasource.url or DATABASE_URL(must contain full connection path plus db name)
