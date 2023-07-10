@@ -21,7 +21,7 @@ This is for people sick of the over-bloatedesness and over-abstraction of Hibern
 
 ### example code (with tests in TestMain Class):(https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/tree/main/testing/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/testing)
 
-Also, every public method in the BaseRepository class is usable for every defined Repository class, these come available from the start, there are many methods (in  https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/blob/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/database/base/BaseRepository.java)
+Also, every public method in the BaseRepository class is usable for every defined Repository class, these come available from the start, there are many methods (in  https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/blob/main/src/main/java/org/greatgamesonly/shared/opensource/sql/framework/lightweightsql/database/BaseRepository.java)
 
 
 add as dependency by using jitpack.io, go to this link: https://jitpack.io/#ricomaster9000/LightWeight_Java_PSQL_Framework/1.4.0
