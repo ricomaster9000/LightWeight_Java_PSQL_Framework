@@ -620,21 +620,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return updateEntities(Arrays.stream(entitiesToUpdate).collect(Collectors.toList()));
     }
 
-    private final void deleteEntitiesListGeneric(List<? extends BaseEntity> deleteEntitiesGeneric) throws RepositoryException {
-        if(deleteEntitiesGeneric == null || deleteEntitiesGeneric.isEmpty()) {
-            return;
-        }
-        Object toUpdate = Array.newInstance(getDbEntityClass(),deleteEntitiesGeneric.size());
-        try {
-            for (int i = 0; i < deleteEntitiesGeneric.size(); i++) {
-                Array.set(toUpdate,i,deleteEntitiesGeneric.get(i));
-            }
-        } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_DELETE__ERROR, e.getMessage());
-        }
-        deleteEntities(getDbEntityArrayClass().cast(toUpdate));
-    }
-
     public final List<E> updateEntities(List<E> entitiesToUpdate) throws RepositoryException {
         List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
