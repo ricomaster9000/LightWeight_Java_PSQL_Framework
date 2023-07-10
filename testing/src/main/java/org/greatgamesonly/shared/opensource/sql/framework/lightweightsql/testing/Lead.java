@@ -6,6 +6,7 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.*;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(tableName = "lead", repositoryClass = LeadRepository.class)
@@ -219,6 +220,9 @@ public class Lead extends BaseEntity {
     }
 
     public List<LeadQuote> getLeadQuotes() {
+        if(leadQuotes == null) {
+            this.leadQuotes = new ArrayList<>();
+        }
         return leadQuotes;
     }
 

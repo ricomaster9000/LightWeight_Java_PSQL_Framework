@@ -149,7 +149,23 @@ public class TestMain {
 
             System.out.println("TESTS - Fetching entities in a filtered way");
 
-            System.out.println("TESTS - Fetching updated entities and adding oneToMany relationships then persisting changes");
+            System.out.println("TESTS - adding oneToMany relationships then persisting changes");
+
+            Lead leadTestOneToManyInsert = new Lead();
+            leadTestOneToManyInsert.setExternalReferenceId(UUID.randomUUID().toString());
+            leadTestOneToManyInsert.setConnexId(null);
+            leadTestOneToManyInsert.setUcid("DECKOS");
+            leadTestOneToManyInsert.setCreateDate(nowDbTimestamp());
+            leadTestOneToManyInsert.setFirstName("test_firstname55");
+            leadTestOneToManyInsert.setSurname("test_surname55");
+            leadTestOneToManyInsert.setCivilRegNo("11055555131342");
+            leadTestOneToManyInsert.setPhoneNumber("0123456782");
+            leadTestOneToManyInsert.setEmailAddress("testing@gmail.com");
+            leadTestOneToManyInsert.setProductId(6L);
+            leadTestOneToManyInsert.setProcessingId(UUID.randomUUID().toString());
+            leadTestOneToManyInsert.setLeadReceiveDate(nowDbTimestamp());
+            leadTestOneToManyInsert.getLeadQuotes().add(new LeadQuote(2342342L));
+            leadRepository.insertEntity(leadTestOneToManyInsert);
 
             //lead.setLeadQuotes(List<LeadQuote> leadQuotes)
 
@@ -194,8 +210,11 @@ public class TestMain {
             throw new RuntimeException(e);
         } finally {
             System.out.println("TESTS - CLEAN UP DATA");
-            if(statusTypeRepository != null) {
+            if(leadRepository != null) {
                 leadRepository.deleteAllNoException();
+            }
+            if(leadQuoteRepository != null) {
+                leadQuoteRepository.deleteAllNoException();
             }
             if(statusTypeRepository != null) {
                 statusTypeRepository.deleteAllNoException();
