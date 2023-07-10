@@ -49,6 +49,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_PREPARE_GET__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00118", "Error preparing get-entity-query-and-related-info",
             500);
+    public static final RepositoryError REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS = new RepositoryError(RepositoryError.class.getSimpleName()+"_00119", "invalid method arguments, all arguments are of NULL value",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);

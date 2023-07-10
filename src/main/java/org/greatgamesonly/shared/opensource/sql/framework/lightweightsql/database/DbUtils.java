@@ -81,13 +81,12 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
                     dbEntityColumnToFieldToGetter.setReferenceFromColumnName(field.getAnnotation(OneToOne.class).referenceFromColumnName());
-                    dbEntityColumnToFieldToGetter.setReferenceToColumnName(field.getAnnotation(OneToOne.class).referenceToColumnName());
 
                     Collection<DbEntityColumnToFieldToGetter> toOneEntityDbEntityColumnToFieldsToGetters = getDbEntityColumnToFieldToGetters(field.getType());
 
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(toOneEntityDbEntityColumnToFieldsToGetters.stream()
-                            .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).referenceToColumnName()))
-                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship from %s must connect to a valid field in %s",entityClass,field.getType())))
+                            .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName()))
+                            .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship toOneEntityReferenceFromColumnName annotation field from %s must connect to a valid field in %s",entityClass,field.getType())))
                             .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setInsertOrUpdateRelationInDbInteractions(true);

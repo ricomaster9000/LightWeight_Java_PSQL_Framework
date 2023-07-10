@@ -517,7 +517,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
         if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
-            return new ArrayList<>();
+            throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
         }
         Object toInsert = Array.newInstance(getDbEntityClass(),entitiesToInsert.size());
         try {
@@ -528,6 +528,10 @@ public abstract class BaseRepository<E extends BaseEntity> {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e.getMessage());
         }
         return insertEntities(getDbEntityArrayClass().cast(toInsert));
+    }
+
+    public final E insertEntity(E entityToInsert) throws RepositoryException {
+        return insertEntities(entityToInsert).get(0);
     }
 
     @SafeVarargs
@@ -541,7 +545,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<Object> queryParams = new ArrayList<>();
         try {
             if(entitiesToInsert == null || entitiesToInsert.size() <= 0) {
-                return new ArrayList<>();
+                throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
@@ -597,7 +601,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     public final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
         if(entitiesToUpdate == null || entitiesToUpdate.isEmpty()) {
-            return new ArrayList<>();
+            throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
         }
         Object toUpdate = Array.newInstance(getDbEntityClass(),entitiesToUpdate.size());
         try {
@@ -622,7 +626,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         List<Object> queryParams = new ArrayList<>();
         try {
             if(entitiesToUpdate == null || entitiesToUpdate.size() <= 0) {
-                return new ArrayList<>();
+                throw new RepositoryException(REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS);
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
@@ -679,14 +683,23 @@ public abstract class BaseRepository<E extends BaseEntity> {
             if(entitiesToDelete == null || entitiesToDelete.size() <= 0) {
                 throw new RepositoryException(RepositoryError.REPOSITORY_INSERT__ERROR, "null or empty entitiesToDelete value was passed");
             }
-            Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             Collection<DbEntityColumnToFieldToGetter> oneToManyRelationFieldToGetters = getOneToManyRelationFieldToGetters(getDbEntityClass());
+            Collection<DbEntityColumnToFieldToGetter> oneToOneRelationFieldToGetters = getOneToOneRelationFieldToGetters(getDbEntityClass());
 
             if(!oneToManyRelationFieldToGetters.isEmpty()) {
                 for(E entityToDelete : entitiesToDelete) {
                     for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : oneToManyRelationFieldToGetters) {
                         BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
                         toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getReferenceToColumnName(), entityToDelete.getId());
+                    }
+                }
+            }
+
+            if(!oneToOneRelationFieldToGetters.isEmpty()) {
+                for(E entityToDelete : entitiesToDelete) {
+                    for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : oneToOneRelationFieldToGetters) {
+                        BaseRepository<?> toEntityRepo = dbEntityColumnToFieldToGetter.getLinkedClassEntity().getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
+                        toEntityRepo.deleteByColumn(dbEntityColumnToFieldToGetter.getToOneEntityReferenceFromColumnName(), entityToDelete.getId());
                     }
                 }
             }
