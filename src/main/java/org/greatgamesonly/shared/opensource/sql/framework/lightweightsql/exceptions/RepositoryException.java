@@ -6,6 +6,11 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 public class RepositoryException extends Exception {
     private final RepositoryError type;
 
+    public RepositoryException(RepositoryError type) {
+        super(type.getReason());
+        this.type = type;
+    }
+
     public RepositoryException(RepositoryError type, Exception e) {
         super(type.getReason()+","+e.getMessage(),e);
         this.type = type;

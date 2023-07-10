@@ -51,7 +51,10 @@ public class Lead extends BaseEntity {
     protected String processingId;
     @OneToMany(referenceToColumnName = "lead_id", toManyEntityClass = LeadQuote.class, addToWherePartInGetQuery = "create_date >= now() - INTERVAL '365 DAY'") //do not ever worry about leadQuotes older than one year
     protected List<LeadQuote> leadQuotes;
-
+    @OneToOne(referenceFromColumnName = "lead_attached_info_id", toOneEntityReferenceFromColumnName = "lead_id", toOneEntityClass = LeadAttachedInfo.class)
+    private LeadAttachedInfo leadAttachedInfo;
+    @OneToOneReferenceId(columnName = "lead_attached_info_id", referenceToColumnName = "id")
+    private Long leadAttachedInfoId;
     @ColumnName("attached_pdf_document_data")
     private byte[] pdfDocumentData;
     @DBIgnore
@@ -221,6 +224,22 @@ public class Lead extends BaseEntity {
 
     public void setLeadQuotes(List<LeadQuote> leadQuotes) {
         this.leadQuotes = leadQuotes;
+    }
+
+    public LeadAttachedInfo getLeadAttachedInfo() {
+        return leadAttachedInfo;
+    }
+
+    public void setLeadAttachedInfo(LeadAttachedInfo leadAttachedInfo) {
+        this.leadAttachedInfo = leadAttachedInfo;
+    }
+
+    public Long getLeadAttachedInfoId() {
+        return leadAttachedInfoId;
+    }
+
+    public void setLeadAttachedInfoId(Long leadAttachedInfoId) {
+        this.leadAttachedInfoId = leadAttachedInfoId;
     }
 
     public byte[] getPdfDocumentData() {

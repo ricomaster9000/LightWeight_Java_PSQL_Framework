@@ -21,6 +21,7 @@ public class TestMain {
         StatusTypeRepository statusTypeRepository = null;
         LeadRepository leadRepository = null;
         LeadQuoteRepository leadQuoteRepository = null;
+        LeadAttachedInfoRepository leadAttachedInfoRepository = null;
 
         String pdfDocumentData = "hahahahahahahahaha";
 
@@ -37,12 +38,16 @@ public class TestMain {
             leadRepository = new LeadRepository();
             leadQuoteRepository = new LeadQuoteRepository();
             statusTypeRepository = new StatusTypeRepository();
+            leadAttachedInfoRepository = new LeadAttachedInfoRepository();
+
+
+            final String leadTest1ExternalReferenceId = "GHSJHKJHHSIDG";
 
             System.out.println("TESTS - Creating new entities and inserting these entities into database");
 
             Lead leadTest1 = new Lead();
             leadTest1.setContactId(1L);
-            leadTest1.setExternalReferenceId("GHSJHKJHHSIDG");
+            leadTest1.setExternalReferenceId(leadTest1ExternalReferenceId);
             leadTest1.setConnexId(null);
             leadTest1.setUcid("TEST_UCID");
             leadTest1.setCreateDate(nowDbTimestamp());
@@ -121,11 +126,11 @@ public class TestMain {
             System.out.println("TESTS - Fetching entity with byte array data and checking if its still valid");
             List<Lead> leadsWithByteData = leadRepository.getByColumnIfNotNull("attached_pdf_document_data");
             if(leadsWithByteData.isEmpty()) {
-                throw new java.lang.RuntimeException("no entities with byteData could be fetched even though entities were persisted with byte data");
+                throw new RuntimeException("no entities with byteData could be fetched even though entities were persisted with byte data");
             }
             for(Lead lead : leadsWithByteData) {
                 if(lead.getContactId() == 7L && !new String(lead.getPdfDocumentData()).equals(pdfDocumentData)) {
-                    throw new java.lang.RuntimeException("entity fetched does not have correct byte array data in the correct format");
+                    throw new RuntimeException("entity fetched does not have correct byte array data in the correct format");
                 }
             }
 
@@ -138,7 +143,7 @@ public class TestMain {
                 lead.setProcessingId(UUID.randomUUID().toString()+"1");
                 Lead updatedLead = leadRepository.insertOrUpdate(lead);
                 if(oldProcessingId.equals(updatedLead.getProcessingId())) {
-                    throw new java.lang.RuntimeException("entity updated has the same data after changing it and persisting to database");
+                    throw new RuntimeException("entity updated has the same data after changing it and persisting to database");
                 }
             }
 
@@ -155,9 +160,30 @@ public class TestMain {
             StatusType testStatusType = new StatusType(1L,"test_status");
             statusTypeRepository.insertEntities(testStatusType);
 
-            //lead.setContactTypeId(java.lang.Long contactTypeId)
+            System.out.println("TESTS - Creating new entities for OneToOneRelationships and inserting these entities into the database");
+
+            Lead leadFetched = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            LeadAttachedInfo testAttachedLeadInfo = new LeadAttachedInfo(1L, leadFetched.getId(), "test_status");
+            leadFetched.setLeadAttachedInfo(leadAttachedInfoRepository.insertEntity(testAttachedLeadInfo));
+            Lead updatedOneToOneLead = leadRepository.insertOrUpdate(leadFetched);
+            updatedOneToOneLead = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            if(updatedOneToOneLead.getLeadAttachedInfo() == null) {
+                throw new RuntimeException("entity updated does not have one to one entity attached to it");
+            }
+
+            System.out.println("TESTS - fetching entities to update with OneToOne entities and persisting changes");
 
             System.out.println("TESTS - fetching entities to update with ManyToOne entities and persisting changes");
+
+            System.out.println("TESTS - fetching entities to remove oneToOne relationships and persisting changes");
+
+            Lead leadToRemoveOneToOne = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            leadToRemoveOneToOne.setLeadAttachedInfo(null);
+            leadRepository.updateEntities(leadToRemoveOneToOne);
+            leadToRemoveOneToOne = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
+            if(leadToRemoveOneToOne.getLeadAttachedInfo() != null && leadAttachedInfoRepository.countByColumn("info","test_status") > 0) {
+                throw new RuntimeException("entity one to one relation was not deleted");
+            }
 
             System.out.println("TESTS - fetching entities to remove oneToMany relationships and persisting changes");
 
@@ -173,6 +199,9 @@ public class TestMain {
             }
             if(statusTypeRepository != null) {
                 statusTypeRepository.deleteAllNoException();
+            }
+            if(leadAttachedInfoRepository != null) {
+                leadAttachedInfoRepository.deleteAllNoException();
             }
         }
 

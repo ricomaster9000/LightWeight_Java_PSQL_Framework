@@ -49,6 +49,12 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_PREPARE_GET__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00118", "Error preparing get-entity-query-and-related-info",
             500);
+    public static final RepositoryError REPOSITORY_DO_NOT_PASS_NULL_ARGUMENTS = new RepositoryError(RepositoryError.class.getSimpleName()+"_00119", "invalid method arguments, all arguments are of NULL value",
+            500);
+    public static final RepositoryError REPOSITORY_PREPARE_DELETE__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00120", "Error preparing delete-entity-query-and-related-info",
+            500);
+    public static final RepositoryError REPOSITORY_DELETE_SUB_ENTITIES__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00121", "Error deleting all sub relational entities linked to main entities to insert or update",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);

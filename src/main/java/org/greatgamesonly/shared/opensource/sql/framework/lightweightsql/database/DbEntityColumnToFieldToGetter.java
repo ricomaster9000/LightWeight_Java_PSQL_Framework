@@ -23,6 +23,8 @@ public class DbEntityColumnToFieldToGetter {
 
     private boolean isForManyToOneReferenceId = false;
 
+    private boolean isForOneToOneReferenceId = false;
+
     private Class<? extends BaseEntity> linkedClassEntity = null;
 
     private String referenceFromColumnName;
@@ -182,6 +184,14 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setForManyToOneReferenceId(boolean forManyToOneReferenceId) {
         isForManyToOneReferenceId = forManyToOneReferenceId;
+    }
+
+    public boolean isForOneToOneReferenceId() {
+        return isForOneToOneReferenceId;
+    }
+
+    public void setForOneToOneReferenceId(boolean forOneToOneReferenceId) {
+        isForOneToOneReferenceId = forOneToOneReferenceId;
     }
 
     public String getLinkedDbColumnName() {

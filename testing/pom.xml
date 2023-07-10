@@ -6,7 +6,7 @@
 	<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 	<artifactId>testing</artifactId>
 	<url>https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/testing</url>
-	<version>1.0.1</version>
+	<version>1.0.3</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>For Testing</description>
 	<licenses>
@@ -23,6 +23,16 @@
 			<organizationUrl/>
 		</developer>
 	</developers>
+	<repositories>
+		<repository>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
+		</repository>
+		<repository>
+			<id>lightweightsql</id>
+			<url>/..</url>
+		</repository>
+	</repositories>
 	<properties>
 		<compiler-plugin.version>3.8.1</compiler-plugin.version>
 		<maven.compiler.parameters>true</maven.compiler.parameters>
@@ -31,19 +41,18 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
-	<repositories>
-		<repository>
-			<id>lightweightsql</id>
-			<url>/..</url>
-		</repository>
-	</repositories>
 	<!--mvn versions:use-latest-releases-->
 	<dependencies>
 		<dependency>
 			<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 			<artifactId>lightweightsql</artifactId>
 			<version>LATEST</version>
-			<type>jar</type>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ricomaster9000</groupId>
+			<artifactId>ResourceUtils</artifactId>
+			<version>1.0.9</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
