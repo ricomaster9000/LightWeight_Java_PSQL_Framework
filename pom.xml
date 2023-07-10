@@ -6,7 +6,7 @@
 	<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 	<artifactId>lightweightsql</artifactId>
 	<url>https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework</url>
-	<version>1.4.0</version>
+	<version>1.4.2</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Lightweight Java PSQL Database interaction framework to be used effectively on lambdas running on Java, but can be used for traditional apps as well</description>
 	<licenses>

@@ -35,6 +35,8 @@ public class DbEntityColumnToFieldToGetter {
 
     private String referenceToColumnClassFieldGetterMethodName;
 
+    private String referenceToColumnClassFieldSetterMethodName;
+
     private String linkedDbColumnName;
 
     private String additionalQueryToAdd;
@@ -160,6 +162,14 @@ public class DbEntityColumnToFieldToGetter {
 
     public void setReferenceToColumnClassFieldGetterMethodName(String referenceToColumnClassFieldGetterMethodName) {
         this.referenceToColumnClassFieldGetterMethodName = referenceToColumnClassFieldGetterMethodName;
+    }
+
+    public String getReferenceToColumnClassFieldSetterMethodName() {
+        return referenceToColumnClassFieldSetterMethodName;
+    }
+
+    public void setReferenceToColumnClassFieldSetterMethodName(String referenceToColumnClassFieldSetterMethodName) {
+        this.referenceToColumnClassFieldSetterMethodName = referenceToColumnClassFieldSetterMethodName;
     }
 
     public boolean isForOneToOneRelation() {

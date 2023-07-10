@@ -9,8 +9,6 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 import java.beans.IntrospectionException;
 import java.io.IOException;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.CallableStatement;
 import java.sql.ResultSet;
@@ -541,6 +539,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public List<E> insertEntities(List<E> entitiesToInsert) throws RepositoryException {
+        List<E> result = new ArrayList<>();
         StringBuilder stringBuilder = new StringBuilder();
         List<DbEntityColumnToFieldToGetter> relationFieldToGetters;
         List<Object> queryParams = new ArrayList<>();
@@ -550,10 +549,6 @@ public abstract class BaseRepository<E extends BaseEntity> {
             }
             Collection<DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = getDbEntityColumnToFieldToGetters(getDbEntityClass());
             relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
-
-            // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE BEGIN
-            handleEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToInsert);
-            // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
 
             stringBuilder.append(String.format("INSERT INTO \"%s\" (", getDbEntityTableName()));
             stringBuilder.append(
@@ -597,7 +592,15 @@ public abstract class BaseRepository<E extends BaseEntity> {
         } catch (IntrospectionException e) {
             throw new RepositoryException(RepositoryError.REPOSITORY_PREPARE_INSERT__ERROR, e);
         }
-        return executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
+        result = executeInsertQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
+        // set id's
+        for(int i = 0; i < result.size(); i++) {
+            entitiesToInsert.get(i).setId(result.get(i).getId());
+        }
+        // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE BEGIN
+        handleEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToInsert);
+        // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
+        return result;
     }
 
     private final List<E> updateEntitiesListGeneric(List<? extends BaseEntity> entitiesToUpdate) throws RepositoryException {
@@ -711,17 +714,27 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 for (DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter : relationFieldToGetters) {
                     List<? extends BaseEntity> insertEntities;
                     List<? extends BaseEntity> updateEntities;
-                    List<? extends BaseEntity> relationToEntitiesInsertedOrUpdated = new ArrayList<>();
+                    List<BaseEntity> relationToEntitiesInsertedOrUpdated = new ArrayList<>();
                     for (E entity : entitiesParam) {
-                        if(entity == null) {
+                        if(entity == null || callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()) == null) {
                             continue;
                         }
+                        // set referenceFromColumn field value
+
                         // do not call addAll if the relationship type is for single entity relations and not multiple relations to one relation
-                        if (dbEntityColumnToFieldToGetter.isForOneToOneRelation() || dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
+                        if (dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
+                            BaseEntity toAdd = callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName());
+                            callReflectionMethodQuick(toAdd, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldSetterMethodName(), new Long[]{entity.getId()}, new Class[]{Long.class});
+                            relationToEntitiesInsertedOrUpdated.add(toAdd);
+                        } else if(dbEntityColumnToFieldToGetter.isForManyToOneRelation()) {
                             relationToEntitiesInsertedOrUpdated.add(callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName()));
                         } else {
                             List toAdd = callReflectionMethodGeneric(entity, dbEntityColumnToFieldToGetter.getGetterMethodName());
                             if(toAdd != null) {
+                                // set referenceFromColumn field value
+                                for(Object toManyAdd : toAdd) {
+                                    callReflectionMethodQuick(toManyAdd, dbEntityColumnToFieldToGetter.getReferenceToColumnClassFieldSetterMethodName(), new Long[]{entity.getId()},new Class[]{Long.class});
+                                }
                                 relationToEntitiesInsertedOrUpdated.addAll(toAdd);
                             }
                         }
@@ -742,7 +755,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                             DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
                             Long idToUse = relationToEntitiesInsertedOrUpdated.get(0).getId();
                             if(!dbEntityColumnToFieldToGetter.isInsertOrUpdateRelationInDbInteractions() && idToUse == null) {
-                                throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id, confirm that this entity has been persisted to database",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
+                                throw new RepositoryException(REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR, String.format("manyToOne entity %s linked to %s has no id, confirm that this entity has been persisted to database",dbEntityColumnToFieldToGetter.getLinkedClassEntity().getSimpleName(), entity.getClass().getSimpleName()));
                             }
                             callReflectionMethodQuick(entity, manyToOneRefIdRelationFieldToGetter.getSetterMethodName(), idToUse, manyToOneRefIdRelationFieldToGetter.getMethodParamTypes()[0]);
                         } else if(dbEntityColumnToFieldToGetter.isForOneToOneRelation()) {
@@ -761,7 +774,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
             }
         } catch (Exception e) {
-            throw new RepositoryException(RepositoryError.REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR,e);
+            throw new RepositoryException(REPOSITORY_INSERT_OR_UPDATE_SUB_ENTITIES__ERROR,e);
         }
         return relationToEntities;
     }

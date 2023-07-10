@@ -7,24 +7,30 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 
 import java.sql.Timestamp;
 
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing.TestMain.nowDbTimestamp;
+
 @Entity(tableName = "lead_quote", repositoryClass = LeadQuoteRepository.class)
 public class LeadQuote extends BaseEntity {
     @PrimaryKey
     @ColumnName("id")
     private Long id;
-    @ColumnName("quoteNo")
+    @ColumnName("quote_no")
     private Long quoteNo;
     @ColumnName("lead_id")
     private Long leadId;
     @ColumnName("create_date")
-    private Timestamp createDate;
-    @ColumnName("quote_document_data")
-    protected byte[] quoteDocumentData;
+    private Timestamp createDate = nowDbTimestamp();
+
+    public LeadQuote() {}
+
+    public LeadQuote(Long quoteNo) {
+        this.quoteNo = quoteNo;
+    }
+
     @Override
     public Long getId() {
         return id;
     }
-
     @Override
     public void setId(Long id) {
         this.id = id;
@@ -52,12 +58,5 @@ public class LeadQuote extends BaseEntity {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public byte[] getQuoteDocumentData() {
-        return quoteDocumentData;
-    }
-    public void setQuoteDocumentData(byte[] quoteDocumentData) {
-        this.quoteDocumentData = quoteDocumentData;
     }
 }
