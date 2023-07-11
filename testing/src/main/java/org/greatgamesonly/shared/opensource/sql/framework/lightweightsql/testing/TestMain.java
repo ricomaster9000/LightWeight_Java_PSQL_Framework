@@ -22,6 +22,7 @@ public class TestMain {
         LeadRepository leadRepository = null;
         LeadQuoteRepository leadQuoteRepository = null;
         LeadAttachedInfoRepository leadAttachedInfoRepository = null;
+        LeadTypeRepository leadTypeRepository = null;
 
         String pdfDocumentData = "hahahahahahahahaha";
 
@@ -39,6 +40,7 @@ public class TestMain {
             leadQuoteRepository = new LeadQuoteRepository();
             statusTypeRepository = new StatusTypeRepository();
             leadAttachedInfoRepository = new LeadAttachedInfoRepository();
+            leadTypeRepository = new LeadTypeRepository();
 
 
             final String leadTest1ExternalReferenceId = "GHSJHKJHHSIDG";
@@ -176,6 +178,10 @@ public class TestMain {
             StatusType testStatusType = new StatusType(1L,"test_status");
             statusTypeRepository.insertEntities(testStatusType);
 
+            LeadType testLeadType = new LeadType();
+            testLeadType.setName("Test_type");
+            testLeadType = leadTypeRepository.insertEntities(testLeadType).get(0);
+
             System.out.println("TESTS - Creating new entities for OneToOneRelationships and inserting these entities into the database");
 
             Lead leadFetched = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
@@ -190,6 +196,21 @@ public class TestMain {
             System.out.println("TESTS - fetching entities to update with OneToOne entities and persisting changes");
 
             System.out.println("TESTS - fetching entities to update with ManyToOne entities and persisting changes");
+
+            Lead leadTestManyToOne = new Lead();
+            leadTestManyToOne.setExternalReferenceId(UUID.randomUUID().toString());
+            leadTestManyToOne.setUcid("TEST_UCID4545345");
+            leadTestManyToOne.setCreateDate(nowDbTimestamp());
+            leadTestManyToOne.setFirstName("test_firstname");
+            leadTestManyToOne.setSurname("test_surname");
+            leadTestManyToOne.setCivilRegNo("05055555131342");
+            leadTestManyToOne.setPhoneNumber("0123456789");
+            leadTestManyToOne.setEmailAddress("testing@gmail.com");
+            leadTestManyToOne.setProductId(3L);
+            leadTestManyToOne.setProcessingId(UUID.randomUUID().toString());
+            leadTestManyToOne.setLeadReceiveDate(nowDbTimestamp());
+            leadTestManyToOne.setLeadType(testLeadType);
+            leadRepository.insertEntity(leadTestManyToOne);
 
             System.out.println("TESTS - fetching entities to remove oneToOne relationships and persisting changes");
 
@@ -221,6 +242,9 @@ public class TestMain {
             }
             if(leadAttachedInfoRepository != null) {
                 leadAttachedInfoRepository.deleteAllNoException();
+            }
+            if(leadTypeRepository != null) {
+                leadTypeRepository.deleteAllNoException();
             }
         }
 

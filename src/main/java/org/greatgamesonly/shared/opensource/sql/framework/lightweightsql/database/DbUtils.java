@@ -66,12 +66,12 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(oneToManyAnnotation.toManyEntityClass());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(oneToManyAnnotation.referenceToColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(oneToManyAnnotation.toManyEntityClass()).stream()
-                        .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(oneToManyAnnotation.referenceToColumnName()))
+                        .filter(dbEntityColumnToFieldToGetterOneToMany -> oneToManyAnnotation.referenceToColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
                         .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
                         .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldSetterMethodName(getDbEntityColumnToFieldToGetters(oneToManyAnnotation.toManyEntityClass()).stream()
-                        .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(oneToManyAnnotation.referenceToColumnName()))
+                        .filter(dbEntityColumnToFieldToGetterOneToMany -> oneToManyAnnotation.referenceToColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
                         .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
                         .getSetterMethodName()
                     );
@@ -91,12 +91,12 @@ public class DbUtils {
                     Collection<DbEntityColumnToFieldToGetter> toOneEntityDbEntityColumnToFieldsToGetters = getDbEntityColumnToFieldToGetters(field.getAnnotation(OneToOne.class).toOneEntityClass());
 
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(toOneEntityDbEntityColumnToFieldsToGetters.stream()
-                            .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName()))
+                            .filter(dbEntityColumnToFieldToGetterOneToMany -> field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
                             .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship toOneEntityReferenceFromColumnName annotation field from %s must connect to a valid field in %s",entityClass,field.getType())))
                             .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldSetterMethodName(toOneEntityDbEntityColumnToFieldsToGetters.stream()
-                            .filter(dbEntityColumnToFieldToGetterOneToMany -> dbEntityColumnToFieldToGetterOneToMany.getDbColumnName().equals(field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName()))
+                            .filter(dbEntityColumnToFieldToGetterOneToMany -> field.getAnnotation(OneToOne.class).toOneEntityReferenceFromColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
                             .findFirst().orElseThrow(() -> new IntrospectionException(String.format("OneToOne relationship toOneEntityReferenceFromColumnName annotation field from %s must connect to a valid field in %s",entityClass,field.getType())))
                             .getSetterMethodName()
                     );
