@@ -12,11 +12,15 @@ import static java.time.ZoneOffset.UTC;
 public class TestMain {
 
     public static void main(String[] args) {
-        doTests(args[0],args[1],args[2]);
-        System.exit(0);
+        try {
+            doTests(args[0], args[1], args[2]);
+            System.exit(0);
+        } catch(Exception e) {
+            System.exit(-1);
+        }
     }
 
-    private static void doTests(String databaseUrl, String databaseUsername, String databasePassword) {
+    private static void doTests(String databaseUrl, String databaseUsername, String databasePassword) throws Exception {
         System.out.println("TESTS - BEGIN");
         StatusTypeRepository statusTypeRepository = null;
         LeadRepository leadRepository = null;
@@ -128,11 +132,11 @@ public class TestMain {
             System.out.println("TESTS - Fetching entity with byte array data and checking if its still valid");
             List<Lead> leadsWithByteData = leadRepository.getByColumnIfNotNull("attached_pdf_document_data");
             if(leadsWithByteData.isEmpty()) {
-                throw new RuntimeException("no entities with byteData could be fetched even though entities were persisted with byte data");
+                throw new Exception("no entities with byteData could be fetched even though entities were persisted with byte data");
             }
             for(Lead lead : leadsWithByteData) {
                 if(lead.getContactId() == 7L && !new String(lead.getPdfDocumentData()).equals(pdfDocumentData)) {
-                    throw new RuntimeException("entity fetched does not have correct byte array data in the correct format");
+                    throw new Exception("entity fetched does not have correct byte array data in the correct format");
                 }
             }
 
@@ -145,7 +149,7 @@ public class TestMain {
                 lead.setProcessingId(UUID.randomUUID().toString()+"1");
                 Lead updatedLead = leadRepository.insertOrUpdate(lead);
                 if(oldProcessingId.equals(updatedLead.getProcessingId())) {
-                    throw new RuntimeException("entity updated has the same data after changing it and persisting to database");
+                    throw new Exception("entity updated has the same data after changing it and persisting to database");
                 }
             }
 
@@ -190,7 +194,7 @@ public class TestMain {
             Lead updatedOneToOneLead = leadRepository.insertOrUpdate(leadFetched);
             updatedOneToOneLead = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
             if(updatedOneToOneLead.getLeadAttachedInfo() == null) {
-                throw new RuntimeException("entity updated does not have one to one entity attached to it");
+                throw new Exception("entity updated does not have one to one entity attached to it");
             }
 
             System.out.println("TESTS - fetching entities to update with OneToOne entities and persisting changes");
@@ -219,7 +223,7 @@ public class TestMain {
             leadRepository.updateEntities(leadToRemoveOneToOne);
             leadToRemoveOneToOne = leadRepository.getByColumn("external_reference_id", leadTest1ExternalReferenceId).get(0);
             if(leadToRemoveOneToOne.getLeadAttachedInfo() != null && leadAttachedInfoRepository.countByColumn("info","test_status") > 0) {
-                throw new RuntimeException("entity one to one relation was not deleted");
+                throw new Exception("entity one to one relation was not deleted");
             }
 
             System.out.println("TESTS - fetching entities to remove oneToMany relationships and persisting changes");
@@ -227,8 +231,6 @@ public class TestMain {
             //UPDATE "lead" SET modify_date = '2023-04-06 10:32:47.599',product_id = 3,civil_reg_no = '05055555131342',first_name = 'test_firstname',email_address = 'testing@gmail.com',phone_number = '0123456789',status_id = null,processing_id = '214a1839-a18b-483f-9859-91c04ed355811',surname = 'test_surname',attached_pdf_document_data = null WHERE "contact_id" = 51
 
             System.out.println("TESTS - fetching entities to remove ManyToOne relationships and persisting changes");
-        } catch(Exception e) {
-            throw new RuntimeException(e);
         } finally {
             System.out.println("TESTS - CLEAN UP DATA");
             if(leadRepository != null) {
@@ -249,6 +251,7 @@ public class TestMain {
         }
 
         System.out.println("TESTS - END");
+        throw new Exception("haha");
     }
 
     public static Calendar nowCal() {
