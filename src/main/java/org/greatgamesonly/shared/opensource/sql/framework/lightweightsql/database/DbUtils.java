@@ -67,12 +67,12 @@ public class DbUtils {
                     dbEntityColumnToFieldToGetter.setReferenceToColumnName(oneToManyAnnotation.referenceToColumnName());
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldGetterMethodName(getDbEntityColumnToFieldToGetters(oneToManyAnnotation.toManyEntityClass()).stream()
                         .filter(dbEntityColumnToFieldToGetterOneToMany -> oneToManyAnnotation.referenceToColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
-                        .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
+                        .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation invalid, check following: make sure referenceToColumnName exists in referenced entity class, can only be applied to BaseEntity value types of list"))
                         .getGetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setReferenceToColumnClassFieldSetterMethodName(getDbEntityColumnToFieldToGetters(oneToManyAnnotation.toManyEntityClass()).stream()
                         .filter(dbEntityColumnToFieldToGetterOneToMany -> oneToManyAnnotation.referenceToColumnName().equals(dbEntityColumnToFieldToGetterOneToMany.getDbColumnName()))
-                        .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value types of list"))
+                        .findFirst().orElseThrow(() -> new IntrospectionException("OneToMany annotation invalid, check following: make sure referenceToColumnName exists in referenced entity class, can only be applied to BaseEntity value types of list"))
                         .getSetterMethodName()
                     );
                     dbEntityColumnToFieldToGetter.setAdditionalQueryToAdd(oneToManyAnnotation.addToWherePartInGetQuery());
@@ -81,7 +81,7 @@ public class DbUtils {
                 }
                 if(field.isAnnotationPresent(OneToOne.class)) {
                     if(field.getType().getSuperclass() == null || !field.getType().getSuperclass().equals(BaseEntity.class)) {
-                        throw new IntrospectionException("OneToMany annotation can only be applied to BaseEntity value type");
+                        throw new IntrospectionException("OneToOne annotation can only be applied to BaseEntity value type");
                     }
                     dbEntityColumnToFieldToGetter.setForOneToOneRelation(true);
                     dbEntityColumnToFieldToGetter.setLinkedClassEntity(field.getAnnotation(OneToOne.class).toOneEntityClass());
@@ -144,7 +144,7 @@ public class DbUtils {
                    !field.isAnnotationPresent(ManyToOne.class) &&
                    !field.isAnnotationPresent(ManyToOneReferenceId.class) &&
                    (dbEntityColumnToFieldToGetter.getDbColumnName() == null || dbEntityColumnToFieldToGetter.getDbColumnName().isBlank())) {
-                    throw new IntrospectionException("annotation not set for db entity field, please set in code");
+                    throw new IntrospectionException(String.format("annotation not set for db entity field %s in class %s, please set in code",field.getName(),entityClass));
                 }
                 if(setters.contains("set" + capitalizeString(dbEntityColumnToFieldToGetter.getClassFieldName()))) {
                     dbEntityColumnToFieldToGetter.setHasSetter(true);
