@@ -514,7 +514,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return entityList;
     }
 
-    private final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
+    public final List<E> insertEntitiesListGeneric(List<? extends BaseEntity> entitiesToInsert) throws RepositoryException {
         if(entitiesToInsert == null || entitiesToInsert.isEmpty()) {
             return new ArrayList<>();
         }
