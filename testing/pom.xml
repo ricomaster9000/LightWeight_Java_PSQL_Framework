@@ -6,7 +6,7 @@
 	<groupId>org.greatgamesonly.shared.opensource.sql.framework</groupId>
 	<artifactId>testing</artifactId>
 	<url>https://github.com/ricomaster9000/LightWeight_Java_PSQL_Framework/testing</url>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<description>For Testing</description>
 	<licenses>

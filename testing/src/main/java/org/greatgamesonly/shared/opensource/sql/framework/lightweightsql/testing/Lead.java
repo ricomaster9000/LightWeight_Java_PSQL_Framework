@@ -58,6 +58,10 @@ public class Lead extends BaseEntity {
     private Long leadAttachedInfoId;
     @ColumnName("attached_pdf_document_data")
     private byte[] pdfDocumentData;
+    @ManyToOne(linkedDbColumnName = "lead_type_id", toOneEntityClass = LeadType.class)
+    private LeadType leadType;
+    @ManyToOneReferenceId(columnName = "lead_type_id", referenceToColumnName = "id")
+    private Long leadTypeId;
     @DBIgnore
     protected Timestamp leadReceiveDate;
     @DBIgnore
@@ -193,6 +197,22 @@ public class Lead extends BaseEntity {
 
     public void setProcessingId(String uniqueGUID) {
         this.processingId = uniqueGUID;
+    }
+
+    public LeadType getLeadType() {
+        return leadType;
+    }
+
+    public void setLeadType(LeadType leadType) {
+        this.leadType = leadType;
+    }
+
+    public Long getLeadTypeId() {
+        return leadTypeId;
+    }
+
+    public void setLeadTypeId(Long leadTypeId) {
+        this.leadTypeId = leadTypeId;
     }
 
     public Timestamp getLeadReceiveDate() {
