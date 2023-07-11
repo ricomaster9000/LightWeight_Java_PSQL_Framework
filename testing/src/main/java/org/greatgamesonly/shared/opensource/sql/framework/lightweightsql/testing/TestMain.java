@@ -251,7 +251,6 @@ public class TestMain {
         }
 
         System.out.println("TESTS - END");
-        throw new Exception("haha");
     }
 
     public static Calendar nowCal() {
