@@ -1,52 +1,46 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
-
+package org.greatgamesonly.shared.opensource.sql.framework;
 
 
 import org.greatgamesonly.opensource.utils.resourceutils.ResourceUtils;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
+import java.time.ZoneOffset;
 import java.util.*;
 
-import static java.time.ZoneOffset.UTC;
+public class MainTest {
+    static StatusTypeRepository statusTypeRepository = null;
+    static LeadRepository leadRepository = null;
+    static LeadQuoteRepository leadQuoteRepository = null;
+    static LeadAttachedInfoRepository leadAttachedInfoRepository = null;
+    static LeadTypeRepository leadTypeRepository = null;
 
-public class TestMain {
 
-    public static void main(String[] args) {
-        try {
-            doTests(args[0], args[1], args[2]);
-            System.exit(0);
-        } catch(Exception e) {
-            System.exit(-1);
-        }
+    @BeforeClass
+    public static void setupEnvironment() {
+        System.out.println("TESTS - Setting up repositories&connection-pools and establishing connection");
+        Properties properties = new Properties();
+        properties.put("DATABASE_URL",ResourceUtils.getProperty("DATABASE_URL"));
+        properties.put("DATABASE_USERNAME",ResourceUtils.getProperty("DATABASE_USERNAME"));
+        properties.put("DATABASE_PASSWORD",ResourceUtils.getProperty("DATABASE_PASSWORD"));
+        properties.put("DB_CONNECTION_POOL_SIZE","5");
+        DbConnectionDetailsManager.setProperties(properties);
+
+        leadRepository = new LeadRepository();
+        leadQuoteRepository = new LeadQuoteRepository();
+        statusTypeRepository = new StatusTypeRepository();
+        leadAttachedInfoRepository = new LeadAttachedInfoRepository();
+        leadTypeRepository = new LeadTypeRepository();
+        System.out.println("TESTS - BEGIN");
     }
 
-    private static void doTests(String databaseUrl, String databaseUsername, String databasePassword) throws Exception {
-        System.out.println("TESTS - BEGIN");
-        StatusTypeRepository statusTypeRepository = null;
-        LeadRepository leadRepository = null;
-        LeadQuoteRepository leadQuoteRepository = null;
-        LeadAttachedInfoRepository leadAttachedInfoRepository = null;
-        LeadTypeRepository leadTypeRepository = null;
-
+    @Test
+    public void doTests() throws Exception {
         String pdfDocumentData = "hahahahahahahahaha";
 
         try {
-            System.out.println("TESTS - Setting up repositories&connection-pools and establishing connection");
-
-            Properties properties = new Properties();
-            properties.put("DATABASE_URL",databaseUrl == null ? ResourceUtils.getProperty("DATABASE_URL") : databaseUrl);
-            properties.put("DATABASE_USERNAME",databaseUsername == null ? ResourceUtils.getProperty("DATABASE_USERNAME") : databaseUsername);
-            properties.put("DATABASE_PASSWORD",databasePassword == null ? ResourceUtils.getProperty("DATABASE_PASSWORD") : databasePassword);
-            properties.put("DB_CONNECTION_POOL_SIZE","5");
-            DbConnectionDetailsManager.setProperties(properties);
-
-            leadRepository = new LeadRepository();
-            leadQuoteRepository = new LeadQuoteRepository();
-            statusTypeRepository = new StatusTypeRepository();
-            leadAttachedInfoRepository = new LeadAttachedInfoRepository();
-            leadTypeRepository = new LeadTypeRepository();
-
-
             final String leadTest1ExternalReferenceId = "GHSJHKJHHSIDG";
 
             System.out.println("TESTS - Creating new entities and inserting these entities into database");
@@ -131,6 +125,7 @@ public class TestMain {
 
             System.out.println("TESTS - Fetching entity with byte array data and checking if its still valid");
             List<Lead> leadsWithByteData = leadRepository.getByColumnIfNotNull("attached_pdf_document_data");
+            Assert.assertFalse(leadsWithByteData.isEmpty());
             if(leadsWithByteData.isEmpty()) {
                 throw new Exception("no entities with byteData could be fetched even though entities were persisted with byte data");
             }
@@ -255,7 +250,7 @@ public class TestMain {
 
     public static Calendar nowCal() {
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeZone(TimeZone.getTimeZone(UTC));
+        calendar.setTimeZone(TimeZone.getTimeZone(ZoneOffset.UTC));
         return calendar;
     }
 

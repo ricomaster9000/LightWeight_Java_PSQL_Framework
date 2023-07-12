@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
+package org.greatgamesonly.shared.opensource.sql.framework;
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.ColumnName;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.Entity;
@@ -6,8 +6,6 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databas
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.BaseEntity;
 
 import java.sql.Timestamp;
-
-import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing.TestMain.nowDbTimestamp;
 
 @Entity(tableName = "lead_quote", repositoryClass = LeadQuoteRepository.class)
 public class LeadQuote extends BaseEntity {
@@ -19,7 +17,7 @@ public class LeadQuote extends BaseEntity {
     @ColumnName("lead_id")
     private Long leadId;
     @ColumnName("create_date")
-    private Timestamp createDate = nowDbTimestamp();
+    private Timestamp createDate = MainTest.nowDbTimestamp();
 
     public LeadQuote() {}
 

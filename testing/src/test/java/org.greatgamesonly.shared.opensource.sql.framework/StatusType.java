@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
+package org.greatgamesonly.shared.opensource.sql.framework;
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.ColumnName;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.PrimaryKey;
