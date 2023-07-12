@@ -34,7 +34,7 @@ jobs:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         DATABASE_USERNAME: ${{ secrets.DATABASE_USERNAME }}
         DATABASE_PASSWORD: ${{ secrets.DATABASE_PASSWORD }}
-      run: mvn clean install && mvn -f testing clean install && mvn -f testing clean install test -DDATABASE_URL=${{ secrets.DATABASE_URL }} -DDATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} -DDATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}"
+      run: mvn clean install && mvn -f testing clean install && mvn -f testing clean install test -DDATABASE_URL=${{ secrets.DATABASE_URL }} -DDATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} -DDATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
