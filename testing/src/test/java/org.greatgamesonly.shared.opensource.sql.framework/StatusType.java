@@ -1,4 +1,4 @@
-package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing;
+package org.greatgamesonly.shared.opensource.sql.framework;
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.ColumnName;
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.PrimaryKey;
@@ -17,11 +17,6 @@ public class StatusType extends BaseEntity {
     public StatusType() {}
 
     public StatusType(String name) {
-        this.name = name;
-    }
-
-    public StatusType(long id, String name) {
-        this.id = id;
         this.name = name;
     }
 

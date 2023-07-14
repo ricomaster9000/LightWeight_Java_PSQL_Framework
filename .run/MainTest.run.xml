@@ -1,0 +1,24 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="MainTest" type="JUnit" factoryName="JUnit">
+    <module name="testing" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.greatgamesonly.shared.opensource.sql.framework.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <extension name="software.aws.toolkits.jetbrains.core.execution.JavaAwsConnectionExtension">
+      <option name="credential" />
+      <option name="region" />
+      <option name="useCurrentConnection" value="false" />
+    </extension>
+    <option name="PACKAGE_NAME" value="org.greatgamesonly.shared.opensource.sql.framework" />
+    <option name="MAIN_CLASS_NAME" value="org.greatgamesonly.shared.opensource.sql.framework.MainTest" />
+    <option name="METHOD_NAME" value="" />
+    <option name="TEST_OBJECT" value="class" />
+    <option name="VM_PARAMETERS" value="-ea -DDATABASE_URL=jdbc:postgresql://testdatabase.cmw5kvj6zl6u.eu-west-1.rds.amazonaws.com:5432/test_sql_framework -DDATABASE_USERNAME=sqlframeworkTest -DDATABASE_PASSWORD=Masdadasd2234234___hadfhajsd_j" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
