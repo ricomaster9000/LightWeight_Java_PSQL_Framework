@@ -1,4 +1,4 @@
 
 make sure you are in the base project directory, run below to run tests
 
-mvn -f testing compile exec:java -Dexec.mainClass="org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.testing.TestMain" -Dexec.args="${{ secrets.DATABASE_URL }} ${{ secrets.DATABASE_USERNAME }} ${{ secrets.DATABASE_PASSWORD }}
+mvn -f testing clean install test -DDATABASE_URL=${{ secrets.DATABASE_URL }} -DDATABASE_USERNAME=${{ secrets.DATABASE_USERNAME }} -DDATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}

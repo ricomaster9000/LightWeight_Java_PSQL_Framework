@@ -11,8 +11,9 @@ import java.util.stream.Collectors;
 import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
 
 public class DbUtils {
-    private static final Map<String, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
-    private static final Map<String, DbEntityColumnToFieldToGetter> inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter = new HashMap<>();
+    private static final HashMap<String, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new HashMap<>();
+    private static final HashMap<String, DbEntityColumnToFieldToGetter> inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter = new HashMap<>();
+    private static final HashMap<String, List<DbEntityColumnToFieldToGetter>> inMemoryDbIgnoreFields = new HashMap<>();
 
     public static Collection<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<?> entityClass) throws IntrospectionException {
         HashMap<String, DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = inMemoryDbEntityColumnToFieldToGetters.get(entityClass.getName());
@@ -172,6 +173,23 @@ public class DbUtils {
             inMemoryDbEntityColumnToFieldToGetters.put(entityClass.getName(),dbEntityColumnToFieldToGetters);
         }
         return dbEntityColumnToFieldToGetters.values();
+    }
+
+    public static List<DbEntityColumnToFieldToGetter> getAllDbIgnoreGetterSetters(Class<?> entityClass) {
+        List<DbEntityColumnToFieldToGetter> existingCachedDbIgnoreFields = inMemoryDbIgnoreFields.getOrDefault(entityClass.toString(), null);
+        if(existingCachedDbIgnoreFields != null) {
+            return existingCachedDbIgnoreFields;
+        } else {
+            existingCachedDbIgnoreFields = List.of(getClassFields(entityClass, false)).stream()
+                    .filter(field -> field.isAnnotationPresent(DBIgnore.class))
+                    .map(dbIgnoreField -> new DbEntityColumnToFieldToGetter(
+                            "get"+capitalizeString(dbIgnoreField.getName()),
+                            "set"+capitalizeString(dbIgnoreField.getName()),
+                            new Class<?>[]{dbIgnoreField.getType()}))
+                    .collect(Collectors.toList());
+            inMemoryDbIgnoreFields.put(entityClass.toString(), existingCachedDbIgnoreFields);
+            return existingCachedDbIgnoreFields;
+        }
     }
 
     public static List<DbEntityColumnToFieldToGetter> getOneToManyRelationFieldToGetters(Class<?> entityClass) throws IntrospectionException {

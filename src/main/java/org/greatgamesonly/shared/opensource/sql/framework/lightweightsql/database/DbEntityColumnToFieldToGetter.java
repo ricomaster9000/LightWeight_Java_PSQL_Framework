@@ -14,38 +14,30 @@ public class DbEntityColumnToFieldToGetter {
     private boolean isModifyDateAutoSet;
     private String modifyDateAutoSetTimezone;
     private boolean canBeUpdatedInDb = true;
-
     private boolean isForOneToManyRelation = false;
-
     private boolean isForOneToOneRelation = false;
-
     private boolean isForManyToOneRelation = false;
-
     private boolean isForManyToOneReferenceId = false;
-
     private boolean isForOneToOneReferenceId = false;
-
     private Class<? extends BaseEntity> linkedClassEntity = null;
-
     private String referenceFromColumnName;
-
     private String referenceToColumnName;
-
     private String toOneEntityReferenceFromColumnName;
-
     private String referenceToColumnClassFieldGetterMethodName;
-
     private String referenceToColumnClassFieldSetterMethodName;
-
     private String linkedDbColumnName;
-
     private String additionalQueryToAdd;
-
     private Class<?>[] methodParamTypes;
-
     private boolean insertOrUpdateRelationInDbInteractions = false;
-
     private boolean deleteToManyEntitiesAutomaticallyOnDelete = true;
+
+    public DbEntityColumnToFieldToGetter() {}
+
+    public DbEntityColumnToFieldToGetter(String getterMethodName, String setterMethodName, Class<?>[] methodParamTypes) {
+        this.getterMethodName = getterMethodName;
+        this.setterMethodName = setterMethodName;
+        this.methodParamTypes = methodParamTypes;
+    }
 
     public String getDbColumnName() {
         return dbColumnName;

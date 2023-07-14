@@ -20,11 +20,6 @@ public class StatusType extends BaseEntity {
         this.name = name;
     }
 
-    public StatusType(long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
     public void setId(Long id) {
         this.id = id;
     }
