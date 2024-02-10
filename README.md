@@ -5,7 +5,7 @@ For Java 11+
 
 Dependency size is small (what lambdas need when cold booting), I tried to keep it as small as possible, but further improvements could perhaps still be made
 
-It uses Apache's DB Utils as its core, with more code wrapped around that but it still allows you to go full base and just execute raw queries
+It uses Apache's DB Utils as its core, with more code wrapped around that but it still allows you to go full base and just execute raw queries via Apache DB utils core
 
 This is for people who want something more simpler than Hibernate or JPA/JTA frameworks with a very small library size footprint and less abstracted deeper layers like entity context layer etc.
 This is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
