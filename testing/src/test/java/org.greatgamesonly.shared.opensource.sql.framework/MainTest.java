@@ -16,6 +16,8 @@ import java.util.stream.Stream;
 public class MainTest {
     static StatusTypeRepository statusTypeRepository = null;
     static LeadRepository leadRepository = null;
+
+    static LeadPrimitiveRepository leadPrimitiveRepository = null;
     static LeadQuoteRepository leadQuoteRepository = null;
     static LeadAttachedInfoRepository leadAttachedInfoRepository = null;
     static LeadTypeRepository leadTypeRepository = null;
@@ -32,6 +34,7 @@ public class MainTest {
         DbConnectionDetailsManager.setProperties(properties);
 
         leadRepository = new LeadRepository();
+        leadPrimitiveRepository = new LeadPrimitiveRepository();
         leadQuoteRepository = new LeadQuoteRepository();
         statusTypeRepository = new StatusTypeRepository();
         leadAttachedInfoRepository = new LeadAttachedInfoRepository();
@@ -141,6 +144,39 @@ public class MainTest {
                                 l.getEmailAddress() != null && !l.getEmailAddress().isBlank() &&
                                 6L == l.getProductId() &&
                                 l.getLeadReceiveDate() != null /*@DbIgnore annotations must be respected*/));
+    }
+
+    @Test()
+    public void testCreateEntitiesWithPrimitiveFields() throws RepositoryException {
+        System.out.println("TESTS - Creating new entities with primitive fields and inserting these entities into database");
+        LeadPrimitive leadTest1 = new LeadPrimitive();
+        leadTest1.setContactId(1L);
+        leadTest1.setExternalReferenceId("TestExternalReference");
+        leadTest1.setConnexId(0);
+        leadTest1.setUcid("TEST_UCID");
+        leadTest1.setCreateDate(nowDbTimestamp());
+        leadTest1.setFirstName("test_firstname");
+        leadTest1.setSurname("test_surname");
+        leadTest1.setCivilRegNo("05055555131342");
+        leadTest1.setPhoneNumber("0123456789");
+        leadTest1.setEmailAddress("testing@gmail.com");
+        leadTest1.setProductId(3L);
+        leadTest1.setProcessingId(UUID.randomUUID().toString());
+        leadTest1.setLeadReceiveDate(nowDbTimestamp());
+
+        Assert.assertTrue("insertEntities - lead with primitive fields must be created and contain correct data and have primary keys assigned",
+                leadPrimitiveRepository.insertEntities(List.of(leadTest1)).stream()
+                        .allMatch(l ->
+                                l.getId() > 0L &&
+                                        l.getUcid() != null && !l.getUcid().isBlank() &&
+                                        l.getCreateDate() != null &&
+                                        l.getFirstName() != null && !l.getFirstName().isBlank() &&
+                                        l.getSurname() != null && !l.getSurname().isBlank() &&
+                                        l.getCivilRegNo() != null && !l.getCivilRegNo().isBlank() &&
+                                        l.getPhoneNumber() != null && !l.getPhoneNumber().isBlank() &&
+                                        l.getEmailAddress() != null && !l.getEmailAddress().isBlank() &&
+                                        l.getProductId() == 3L &&
+                                        l.getLeadReceiveDate() != null /*@DbIgnore annotations must be respected*/));
     }
 
     @Test()
@@ -348,6 +384,9 @@ public class MainTest {
         System.out.println("TESTS - CLEAN UP DATA");
         if(leadRepository != null) {
             leadRepository.deleteAllNoException();
+        }
+        if(leadPrimitiveRepository != null) {
+            leadPrimitiveRepository.deleteAllNoException();
         }
         if(leadQuoteRepository != null) {
             leadQuoteRepository.deleteAllNoException();
