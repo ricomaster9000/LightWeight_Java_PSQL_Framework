@@ -7,7 +7,8 @@ Dependency size is small (what lambdas need when cold booting), I tried to keep 
 
 It uses Apache's DB Utils as its core, with more code wrapped around that but it still allows you to go full base and just execute raw queries
 
-This is for people sick of the over-bloatedesness and over-abstraction of Hibernate or JPA/JTA frameworks, this is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
+This is for people who want something more simpler than Hibernate or JPA/JTA frameworks with a very small library size footprint and less abstracted deeper layers like entity context layer etc.
+This is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
 
 ### do not pass in more than 30000 rows/entities at a time as params when calling methods (unless its for delete or a get), you can call it with multiple 30000 entities for each method call at the same time but not more than 30000, I am not sure if the ApachaUtils core framework code has setup logic to handle this, do at your own risk or split up the calls, I will test this soon and fix it if I have to, the problem is that the 34000+- rows migth be a limit for the IN operator in PSQL Queries
 
