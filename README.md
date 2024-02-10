@@ -14,6 +14,7 @@ This is not a full replacement for those frameworks, but a "light" replacement, 
 
 #### set the following properties inside you properties file or as environment variables: 
 - datasource.url or DATABASE_URL(must contain full connection path plus db name)
+  - example format: jdbc:postgresql://host:port/database
 - datasource.username or DATABASE_USERNAME
 - datasource.password or DATABASE_PASSWORD
 
