@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
 
@@ -12,7 +13,7 @@ class DbConnectionPoolManager {
 
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
 
-    protected static final HashMap<String, Boolean> connectionPoolInUseStatuses = new HashMap<>();
+    protected static final ConcurrentHashMap<String, Boolean> connectionPoolInUseStatuses = new ConcurrentHashMap<>();
 
     private static final int connectionOpenHours = 1;
 

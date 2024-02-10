@@ -14,9 +14,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.callReflectionMethodQuick;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.getManyToOneRefIdRelationFieldToGetter;
@@ -24,8 +24,8 @@ import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.
 
 public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E> {
 
-    private static final HashMap<Class<? extends BaseEntity>,HashMap<Long,Object>> manyToOneRelationValueHolder = new HashMap<>();
-    private static final HashMap<Class<? extends BaseEntity>, Timestamp> manyToOneRelationCacheDateHolder = new HashMap<>();
+    private static final ConcurrentHashMap<Class<? extends BaseEntity>,HashMap<Long,Object>> manyToOneRelationValueHolder = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<? extends BaseEntity>, Timestamp> manyToOneRelationCacheDateHolder = new ConcurrentHashMap<>();
 
     private final Repository repositoryAnnotation;
 
@@ -49,17 +49,21 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
                         if (toOneEntities.isEmpty()) {
                             getToOneEntities(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
                         }
+                        // continue if there are no entities to insert
+                        if (toOneEntities.isEmpty()) {
+                            continue;
+                        }
                         DbEntityColumnToFieldToGetter manyToOneRefIdRelationFieldToGetter = getManyToOneRefIdRelationFieldToGetter(entity.getClass(), dbEntityColumnToFieldToGetter);
                         Object entityManyToOneReferenceIdVal = callReflectionMethodQuick(entity, manyToOneRefIdRelationFieldToGetter.getGetterMethodName());
-                        if (entityManyToOneReferenceIdVal == null) {
+                        // if entity has no toOne linking id then continue
+                        if(entityManyToOneReferenceIdVal == null) {
                             continue;
                         }
                         try {
-                            callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toOneEntities.get((Long) entityManyToOneReferenceIdVal), dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
-                        } catch (IllegalArgumentException e) {
-                            cacheToOneEntitiesInMemoryIfEnabled(dbEntityColumnToFieldToGetter, toOneEntities);
-                            getToOneEntities(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
-                            callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toOneEntities.get((Long) entityManyToOneReferenceIdVal), dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                            Object toOneEntity = toOneEntities.get((Long) entityManyToOneReferenceIdVal);
+                            if(toOneEntity != null) {
+                                callReflectionMethodQuick(entity, dbEntityColumnToFieldToGetter.getSetterMethodName(), toOneEntity, dbEntityColumnToFieldToGetter.getMethodParamTypes()[0]);
+                            }
                         } finally {
                             cacheToOneEntitiesInMemoryIfEnabled(dbEntityColumnToFieldToGetter, toOneEntities);
                         }
@@ -74,18 +78,14 @@ public class BaseBeanListHandler<E extends BaseEntity> extends BeanListHandler<E
 
     private void cacheToOneEntitiesInMemoryIfEnabled(DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter, HashMap<Long, Object> toOneEntities) {
         if(repositoryAnnotation.manyToOneCacheHours() > 0) {
-            setToOneEntities(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
+            BaseBeanListHandler.manyToOneRelationValueHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), toOneEntities);
+            BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(dbEntityColumnToFieldToGetter.getLinkedClassEntity(), DbUtils.nowDbTimestamp());
         }
     }
 
     private void getToOneEntities(Class<? extends BaseEntity> linkedClassEntity, final HashMap<Long,Object> toOneEntities) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, RepositoryException {
         BaseRepository<? extends BaseEntity> toOneRepo = linkedClassEntity.getAnnotation(Entity.class).repositoryClass().getDeclaredConstructor().newInstance();
         toOneRepo.getAll().forEach(toOneEntity -> toOneEntities.put(toOneEntity.getId(),toOneEntity));
-    }
-
-    private void setToOneEntities(Class<? extends BaseEntity> linkedClassEntity, final HashMap<Long,Object> toOneEntities) {
-        BaseBeanListHandler.manyToOneRelationValueHolder.put(linkedClassEntity, toOneEntities);
-        BaseBeanListHandler.manyToOneRelationCacheDateHolder.put(linkedClassEntity, DbUtils.nowDbTimestamp());
     }
 
     private HashMap<Long,Object> getManyToOneRelationValueHolder(Class<? extends BaseEntity> linkedClassEntity) {
