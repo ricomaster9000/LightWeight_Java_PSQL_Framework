@@ -36,23 +36,23 @@ public abstract class BaseRepository<E extends BaseEntity> {
 
     private BaseBeanListHandler<E> queryHandler;
 
-    private final static String COUNT_BY_COLUMN_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM \"%s\" WHERE \"%s\" = %s;";
-    private final static String GET_MAX_VALUE_QUERY_UNFORMATTED = "SELECT MAX(\"%s\") as max FROM \"%s\";";
-    private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM \"%s\" WHERE \"%s\" = %s;";
-    private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM \"%s\" WHERE \"%s\" = %s AND \"%s\" = %s;";
-    private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
-    private final static String GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IS NOT NULL";
-    private final static String GET_BY_ID_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = %s";
-    private final static String GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s)";
-    private final static String GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" IN (%s) AND \"%s\" IN (%s)";
-    private final static String GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" = \"%s\" AND \"%s\" = %s";
-    private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM \"%s\"";
-    private final static String GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED = "SELECT * FROM \"%s\"%s";
-    private final static String GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" > %s";
-    private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" < %s";
-    private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" > %s%s";
-    private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM \"%s\" WHERE \"%s\" < %s%s";
-    private final static String DELETE_BY_COLUMN_QUERY_UNFORMATTED = "DELETE FROM \"%s\" WHERE \"%s\" = %s";
+    private final static String COUNT_BY_COLUMN_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s;";
+    private final static String GET_MAX_VALUE_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s;";
+    private final static String GET_MAX_VALUE_BY_COLUMN_QUERY_UNFORMATTED = "SELECT MAX(%s) as max FROM %s WHERE %s = %s;";
+    private final static String COUNT_BY_COLUMNS_TWO_QUERY_UNFORMATTED = "SELECT COUNT(*) as total FROM %s WHERE %s = %s AND %s = %s;";
+    private final static String GET_BY_COLUMN_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
+    private final static String GET_BY_COLUMN_NAME_VALUE_NOT_NULL_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s IS NOT NULL";
+    private final static String GET_BY_ID_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s";
+    private final static String GET_BY_COLUMN_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s IN (%s)";
+    private final static String GET_BY_COLUMNS_NAME_MULTIPLE_VALUES_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s IN (%s) AND %s IN (%s)";
+    private final static String GET_BY_COLUMNS_TWO_NAME_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s = %s AND %s = %s";
+    private final static String GET_ALL_QUERY_UNFORMATTED = "SELECT * FROM %s";
+    private final static String GET_ALL_ORDER_BY_COLUMN_QUERY_UNFORMATTED = "SELECT * FROM %s%s";
+    private final static String GET_BY_COLUMN_GREATER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s";
+    private final static String GET_BY_COLUMN_LESSER_AS_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s";
+    private final static String GET_BY_COLUMN_GREATER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s > %s%s";
+    private final static String GET_BY_COLUMN_LESSER_AS_ODER_BY_QUERY_UNFORMATTED = "SELECT * FROM %s WHERE %s < %s%s";
+    private final static String DELETE_BY_COLUMN_QUERY_UNFORMATTED = "DELETE FROM %s WHERE %s = %s";
 
     public BaseRepository() {
         DbConnectionPoolManager.startManager();
@@ -154,7 +154,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
     }
 
     public void deleteById(Long id) throws RepositoryException {
-        executeDeleteQuery("DELETE FROM \"" + getDbEntityTableName() + "\" WHERE " + getPrimaryKeyDbColumnName(getDbEntityClass()) + " = " + id);
+        executeDeleteQuery("DELETE FROM \"" + getDbEntityTableName() + "\" WHERE \"" + getPrimaryKeyDbColumnName(getDbEntityClass()) + "\" = " + id);
     }
 
     public void deleteByColumn(String columnName, Object columnValue) throws RepositoryException {
@@ -300,8 +300,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public List<E> getByColumnOrderByPrimaryKey(String columnName, Object columnValue, OrderBy descOrAsc) throws RepositoryException {
         validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName);
-        return executeGetQuery("SELECT * FROM " +
-                getDbEntityTableName() + " WHERE " + columnName + " = " +
+        return executeGetQuery("SELECT * FROM \"" +
+                getDbEntityTableName() + "\" WHERE \"" + columnName + "\" = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(getPrimaryKeyDbColumnName(getDbEntityClass())));
     }
@@ -316,8 +316,8 @@ public abstract class BaseRepository<E extends BaseEntity> {
     public List<E> getByColumnOrderByColumn(String columnName, Object columnValue, String orderByColumn, OrderBy descOrAsc) throws RepositoryException {
         validateSqlQueryParam(true, new Object[]{columnValue});
         validateSqlQueryParam(columnName, orderByColumn);
-        return executeGetQuery("SELECT * FROM " +
-                getDbEntityTableName() + " WHERE " + columnName + " = " +
+        return executeGetQuery("SELECT * FROM \"" +
+                getDbEntityTableName() + "\" WHERE \"" + columnName + "\" = " +
                 returnPreparedValueForQuery(columnValue) +
                 descOrAsc.getQueryEquivalent(orderByColumn));
     }
@@ -554,7 +554,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             handleManyToOneEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToInsert);
             // MANY-TO-ONE END
 
-            stringBuilder.append(String.format("INSERT INTO \"%s\" (", getDbEntityTableName()));
+            stringBuilder.append(String.format("INSERT INTO %s (", getDbEntityTableName()));
             stringBuilder.append(
                 dbEntityColumnToFieldToGetters.stream()
                 .filter(this::includeDbEntityColumnToFieldToGetterInInsertOrUpdateOperations)
@@ -655,7 +655,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             handleManyToOneEntityRelationshipInsertsOrUpdates(relationFieldToGetters,entitiesToUpdate);
             // HANDLE ONE-TO-MANY, ONE-TO-ONE, MANY-TO-ONE END
 
-            stringBuilder.append(String.format("UPDATE \"%s\" SET ", getDbEntityTableName()));
+            stringBuilder.append(String.format("UPDATE %s SET ", getDbEntityTableName()));
             for (BaseEntity entityToUpdate : entitiesToUpdate) {
                 if(entityToUpdate == null) {
                     continue;
@@ -682,7 +682,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 if (!entityToUpdate.equals(entitiesToUpdate.get(entitiesToUpdate.size() - 1))) {
                     stringBuilder.append(",");
                 } else {
-                    stringBuilder.append(String.format(" WHERE \"%s\" = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
+                    stringBuilder.append(String.format(" WHERE %s = %d", getPrimaryKeyDbColumnName(), entityToUpdate.getId()));
                 }
                 executeUpdateQuery(stringBuilder.toString(), relationFieldToGetters, queryParams.toArray());
                 result = entitiesToUpdate;
@@ -708,7 +708,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             List<DbEntityColumnToFieldToGetter> relationFieldToGetters = getAllRelationFieldToGetters(getDbEntityClass());
             handleEntityRelationshipDeletes(relationFieldToGetters,entitiesToDelete);
 
-            stringBuilder.append(String.format("DELETE FROM \"%s\" WHERE %s IN ( ", getDbEntityTableName(), getPrimaryKeyDbColumnName()));
+            stringBuilder.append(String.format("DELETE FROM %s WHERE %s IN ( ", getDbEntityTableName(), getPrimaryKeyDbColumnName()));
             stringBuilder.append(
                 entitiesToDelete.stream()
                 .map(entity -> entity.getId().toString())
@@ -1035,7 +1035,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
             switch(this) {
                 case DESC:
                 case ASC:
-                    return String.format(" ORDER BY \"%s\" %s", relevantFieldName, queryBase);
+                    return String.format(" ORDER BY %s %s", relevantFieldName, queryBase);
                 default:
                     return queryBase;
             }
