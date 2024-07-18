@@ -10,27 +10,17 @@ import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.
 
 
 class DbConnectionPoolManager {
-
+    private DbConnectionPoolManager() {}
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
-
     protected static final ConcurrentHashMap<String, Boolean> connectionPoolInUseStatuses = new ConcurrentHashMap<>();
-
     private static final int connectionOpenHours = 1;
-
     private static Timer managerTimer;
-
     private static Timer dbConnectionPoolMonitorTimer;
-
     private static final int managerTimerIntervalSeconds = 10;
-
     private static boolean isManagerTimerRunning = false;
-
     private static final int timesManagerTimerMustRunBeforePoolSizeReAdjustment = 1;
-
     private static int timesManagerTimerRan = 0;
-
     private static final ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
-
     private static int currentMaxDbConnectionPoolSize;
 
     protected static void startManager() {

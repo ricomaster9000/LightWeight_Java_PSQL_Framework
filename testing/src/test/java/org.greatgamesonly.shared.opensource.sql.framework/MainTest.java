@@ -30,7 +30,7 @@ public class MainTest {
         properties.put("DATABASE_URL",ResourceUtils.getProperty("DATABASE_URL"));
         properties.put("DATABASE_USERNAME",ResourceUtils.getProperty("DATABASE_USERNAME"));
         properties.put("DATABASE_PASSWORD",ResourceUtils.getProperty("DATABASE_PASSWORD"));
-        properties.put("DB_CONNECTION_POOL_SIZE","5");
+        properties.put("DB_CONNECTION_POOL_SIZE","40");
         DbConnectionDetailsManager.setProperties(properties);
 
         leadRepository = new LeadRepository();
