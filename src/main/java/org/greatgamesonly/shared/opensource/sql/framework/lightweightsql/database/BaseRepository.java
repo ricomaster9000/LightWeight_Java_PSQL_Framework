@@ -865,7 +865,7 @@ public abstract class BaseRepository<E extends BaseEntity> {
         return relationToEntities;
     }
 
-    private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, Object... queryParameters) throws RepositoryException {
+    private List<E> executeQuery(String queryToRun, QueryType queryType, List<DbEntityColumnToFieldToGetter> relationFieldToGetters, boolean inRetry, Object... queryParameters) throws RepositoryException {
         List<E> entityList = new ArrayList<>();
         PooledConnection pooledConnection = null;
         try {
@@ -955,6 +955,18 @@ public abstract class BaseRepository<E extends BaseEntity> {
                 }
                 if(e.getSQLState().startsWith("23503")) {
                     throw new RepositoryException(REPOSITORY_NOT_NULL_CONSTRAINT_VIOLATION_ERROR, e.getMessage(), e);
+                }
+                if(e.getSQLState().startsWith("08006")) {
+                    if(!inRetry) {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException interruptedException) {
+                            Thread.currentThread().interrupt();
+                        }
+                        return executeQuery(queryToRun, queryType,relationFieldToGetters,true, queryParameters);
+                    } else {
+                        throw new RepositoryException(REPOSITORY_IO_CONNECTION_ERROR_ERROR, e.getMessage(), e);
+                    }
                 }
             }
             throw new RepositoryException(REPOSITORY_GENERAL_SQL__ERROR,  String.format("SQL State: %s\n%s", e.getSQLState(), e.getMessage()), e);

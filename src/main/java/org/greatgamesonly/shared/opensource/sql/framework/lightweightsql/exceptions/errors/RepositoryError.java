@@ -55,6 +55,8 @@ public class RepositoryError extends CustomError {
             500);
     public static final RepositoryError REPOSITORY_DELETE_SUB_ENTITIES__ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00121", "Error deleting all sub relational entities linked to main entities to insert or update",
             500);
+    public static final RepositoryError REPOSITORY_IO_CONNECTION_ERROR_ERROR = new RepositoryError(RepositoryError.class.getSimpleName()+"_00122", "Error Establish connection to database",
+            500);
 
     RepositoryError(String errorCode, String reason, int httpStatusCode) {
         super(errorCode,reason,httpStatusCode);
