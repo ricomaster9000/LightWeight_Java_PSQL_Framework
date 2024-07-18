@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
 
 
-class DbConnectionPoolManager {
+final class DbConnectionPoolManager {
     private DbConnectionPoolManager() {}
     private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
     protected static final ConcurrentHashMap<String, Boolean> connectionPoolInUseStatuses = new ConcurrentHashMap<>();
