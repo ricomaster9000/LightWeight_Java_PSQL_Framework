@@ -2,6 +2,7 @@ package org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.databa
 
 
 import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.annotations.*;
+import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.RepositoryException;
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
@@ -11,11 +12,20 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtils.*;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_INVALID_PARAM__ERROR;
 
 public class DbUtils {
+    private DbUtils() {}
     private static final ConcurrentHashMap<Class<? extends BaseEntity>, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, DbEntityColumnToFieldToGetter> inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<Class<? extends BaseEntity>, List<DbEntityColumnToFieldToGetter>> inMemoryDbIgnoreFields = new ConcurrentHashMap<>();
+    static final String NULL_STR = "NULL";
+    static final String SINGLE_QUOTE_STR = "'";
+    static final String EMPTY_STR = "";
+    static final String ESCAPED_SINGLE_QUOTE_STR = "\\'";
+    static final String PARENTHESIS_LEFT_STR = "(";
+    static final String PARENTHESIS_RIGHT_STR = ")";
 
     public static Collection<DbEntityColumnToFieldToGetter> getDbEntityColumnToFieldToGetters(Class<? extends BaseEntity> entityClass) throws IntrospectionException {
         HashMap<String, DbEntityColumnToFieldToGetter> dbEntityColumnToFieldToGetters = inMemoryDbEntityColumnToFieldToGetters.get(entityClass);
@@ -241,26 +251,53 @@ public class DbUtils {
                 .filter(columnToField -> !columnToField.isForOneToManyRelation() && !columnToField.isForManyToOneRelation() && !columnToField.isForOneToOneRelation())
                 .collect(Collectors.toMap(DbEntityColumnToFieldToGetter::getDbColumnName, DbEntityColumnToFieldToGetter::getClassFieldName));
     }
-
     public static String returnPreparedValueForQuery(Object object) {
         if(object == null) {
-            return "NULL";
+            return NULL_STR;
         }
-
         if(object instanceof String ||
            object instanceof java.util.Date ||
            object.getClass().isEnum() ||
            object instanceof Character ||
            object instanceof Calendar
         ) {
-            return "'" + object + "'";
+            return SINGLE_QUOTE_STR + object + SINGLE_QUOTE_STR;
         } else if(object instanceof BaseEntity) {
             return ((BaseEntity) object).getId().toString();
         } else {
             return object.toString();
         }
     }
+    public static void validateSqlQueryParam(Object... sqlQueryParams) throws RepositoryException {
+        validateSqlQueryParam(false, sqlQueryParams);
+    }
+    public static void validateSqlQueryParam(boolean minimalValidate, Object[] sqlQueryParams) throws RepositoryException {
+        for(Object sqlQueryParam : sqlQueryParams) {
+            // minimalValidate when set to true is mostly used to validate non-query-value params like columnNames and tableNames etc.
+            if(!minimalValidate && sqlQueryParam == null) {
+                throw new RepositoryException(REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR, sqlQueryParam);
+            }
+            if (sqlQueryParam instanceof String) {
+                String paramStr = sqlQueryParam.toString();
+                if(!minimalValidate) {
+                    if(/*check for know SQL query parts that one almost never expects as a value in a query*/
+                            Arrays.stream(sqlPsqlKnownQueryParts.values()).anyMatch(sqlPsqlKnownQueryPart -> paramStr.contains(sqlPsqlKnownQueryPart.toString()))
+                    ) {
+                        throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
+                    }
+                }
+                /*check for subqueries*/
+                if((paramStr.contains(PARENTHESIS_LEFT_STR) || paramStr.contains(PARENTHESIS_RIGHT_STR))) {
+                    throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
+                }
 
+                // replace all escaped single quotes with nothing then check if non-escaped single quotes exist in query, throw excpetion if exists
+                if(paramStr.replace(ESCAPED_SINGLE_QUOTE_STR, EMPTY_STR).contains(SINGLE_QUOTE_STR)) {
+                    throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
+                }
+            }
+        }
+    }
     private static Calendar nowCal(String timezone) {
         return nowCal(timezone, 0);
     }
