@@ -15,7 +15,7 @@ import static org.greatgamesonly.opensource.utils.reflectionutils.ReflectionUtil
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_INVALID_PARAM_NULL_VALUE__ERROR;
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.exceptions.errors.RepositoryError.REPOSITORY_INVALID_PARAM__ERROR;
 
-public class DbUtils {
+public final class DbUtils {
     private DbUtils() {}
     private static final ConcurrentHashMap<Class<? extends BaseEntity>, HashMap<String,DbEntityColumnToFieldToGetter>> inMemoryDbEntityColumnToFieldToGetters = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, DbEntityColumnToFieldToGetter> inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter = new ConcurrentHashMap<>();

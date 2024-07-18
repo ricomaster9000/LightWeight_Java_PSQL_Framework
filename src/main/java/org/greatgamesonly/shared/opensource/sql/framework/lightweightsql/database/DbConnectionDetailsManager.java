@@ -5,7 +5,7 @@ import org.greatgamesonly.opensource.utils.resourceutils.ResourceUtils;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class DbConnectionDetailsManager {
+public final class DbConnectionDetailsManager {
     private DbConnectionDetailsManager() {}
     private static final HashMap<String, String> CONNECTION_DETAILS = new HashMap<>();
     static final int DEFAULT_DB_CONNECTION_POOL_SIZE = 40;
