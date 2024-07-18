@@ -10,8 +10,6 @@ It uses Apache's DB Utils as its core, with more code wrapped around that but it
 This is for people who want something more simpler than Hibernate or JPA/JTA frameworks with a very small library size footprint and less abstracted deeper layers like entity context layer etc.
 This is not a full replacement for those frameworks, but a "light" replacement, it could become a good "light" replacement in the future...
 
-### IF USING PSQL(PostgreSQL) 8.1 OR EARLIER - do not pass in more than 32700 rows/entities at a time as params when calling methods (unless its for delete or a get), you can call it with multiple 32700 entities for each method call at the same time but not more than 32700, I am not sure if the ApachaUtils core framework code has setup logic to handle this, do at your own risk or split up the calls, I will test this soon and fix it if I have to, the problem is that the 32700+- rows migth be a limit for the IN operator in PSQL Queries
-
 #### set the following properties inside you properties file or as environment variables: 
 - datasource.url or DATABASE_URL(must contain full connection path plus db name)
   - example format: jdbc:postgresql://host:port/database
