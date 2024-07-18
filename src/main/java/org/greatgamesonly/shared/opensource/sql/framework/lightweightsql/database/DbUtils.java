@@ -120,7 +120,6 @@ public class DbUtils {
                     {
                         throw new IntrospectionException(String.format("toOneEntityReferenceFromColumnName must link to a field in %s from %s for %s",field.getType(),entityClass,field.getName()));
                     }
-
                     if(Arrays.stream(fields).noneMatch(f -> f.isAnnotationPresent(OneToOneReferenceId.class) && f.getAnnotation(OneToOneReferenceId.class).columnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName())))
                     {
                         throw new IntrospectionException(String.format("ReferenceFromColumnName %s must exist in %s",dbEntityColumnToFieldToGetter.getReferenceFromColumnName(),entityClass));
@@ -150,7 +149,6 @@ public class DbUtils {
                 if(field.isAnnotationPresent(ColumnName.class)) {
                     dbEntityColumnToFieldToGetter.setDbColumnName(field.getAnnotation(ColumnName.class).value());
                 }
-
                 if(!field.isAnnotationPresent(ColumnName.class) &&
                    !field.isAnnotationPresent(OneToMany.class) &&
                    !field.isAnnotationPresent(OneToOne.class) &&
@@ -198,7 +196,7 @@ public class DbUtils {
                             "get"+capitalizeString(dbIgnoreField.getName()),
                             "set"+capitalizeString(dbIgnoreField.getName()),
                             new Class<?>[]{dbIgnoreField.getType()}))
-                    .collect(Collectors.toList());
+                    .toList();
             inMemoryDbIgnoreFields.put(entityClass, existingCachedDbIgnoreFields);
             return existingCachedDbIgnoreFields;
         }
@@ -207,31 +205,31 @@ public class DbUtils {
     public static List<DbEntityColumnToFieldToGetter> getOneToManyRelationFieldToGetters(Class<? extends BaseEntity> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(DbEntityColumnToFieldToGetter::isForOneToManyRelation)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<DbEntityColumnToFieldToGetter> getOneToOneRelationFieldToGetters(Class<? extends BaseEntity> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(DbEntityColumnToFieldToGetter::isForOneToOneRelation)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<DbEntityColumnToFieldToGetter> getManyToOneRelationFieldToGetters(Class<? extends BaseEntity> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(DbEntityColumnToFieldToGetter::isForManyToOneRelation)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static List<DbEntityColumnToFieldToGetter> getAllRelationFieldToGetters(Class<? extends BaseEntity> entityClass) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(dbEntityColumnToFieldToGetter -> dbEntityColumnToFieldToGetter.isForOneToManyRelation() || dbEntityColumnToFieldToGetter.isForOneToOneRelation() || dbEntityColumnToFieldToGetter.isForManyToOneRelation())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static DbEntityColumnToFieldToGetter getManyToOneRefIdRelationFieldToGetter(Class<? extends BaseEntity> entityClass, DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) throws IntrospectionException {
         return getDbEntityColumnToFieldToGetters(entityClass).stream()
                 .filter(dbEntityColumnToFieldToGet -> dbEntityColumnToFieldToGet.isForManyToOneReferenceId() && dbEntityColumnToFieldToGet.getReferenceFromColumnName().equals(dbEntityColumnToFieldToGetter.getLinkedDbColumnName()))
-                .collect(Collectors.toList()).get(0);
+                .toList().get(0);
     }
 
     public static DbEntityColumnToFieldToGetter getOneToOneRefFromRelationColumnToFieldToGetter(Class<? extends BaseEntity> entityClass, DbEntityColumnToFieldToGetter dbEntityColumnToFieldToGetter) throws IntrospectionException {
@@ -239,7 +237,7 @@ public class DbUtils {
         if(result == null) {
             result = getDbEntityColumnToFieldToGetters(entityClass).stream()
                     .filter(dbEntityColumnToFieldToGet -> dbEntityColumnToFieldToGet.isForOneToOneReferenceId() && dbEntityColumnToFieldToGet.getDbColumnName().equals(dbEntityColumnToFieldToGetter.getReferenceFromColumnName()))
-                    .collect(Collectors.toList()).get(0);
+                    .toList().get(0);
             inMemoryToOneReferenceFromDbEntityColumnToFieldToGetter.put(entityClass+dbEntityColumnToFieldToGetter.getReferenceFromColumnName(),result);
         }
         return result;
@@ -287,7 +285,7 @@ public class DbUtils {
                     }
                 }
                 /*check for subqueries*/
-                if((paramStr.contains(PARENTHESIS_LEFT_STR) || paramStr.contains(PARENTHESIS_RIGHT_STR))) {
+                if(paramStr.contains(PARENTHESIS_LEFT_STR) || paramStr.contains(PARENTHESIS_RIGHT_STR)) {
                     throw new RepositoryException(REPOSITORY_INVALID_PARAM__ERROR, paramStr);
                 }
 
