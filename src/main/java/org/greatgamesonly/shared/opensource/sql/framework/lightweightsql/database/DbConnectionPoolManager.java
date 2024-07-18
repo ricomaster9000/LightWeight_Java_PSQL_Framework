@@ -7,12 +7,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbConnectionDetailsManager.getDatabaseMaxDbConnectionPool;
+import static org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.database.DbUtils.isDbConnected;
 
 
 final class DbConnectionPoolManager {
     private DbConnectionPoolManager() {}
-    private static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
-    protected static final ConcurrentHashMap<String, Boolean> connectionPoolInUseStatuses = new ConcurrentHashMap<>();
+    static final ArrayList<PooledConnection> connectionPool = new ArrayList<>();
+    static final ConcurrentHashMap<String, Boolean> connectionPoolInUseStatuses = new ConcurrentHashMap<>();
     private static final int connectionOpenHours = 1;
     private static Timer managerTimer;
     private static Timer dbConnectionPoolMonitorTimer;
@@ -23,7 +24,7 @@ final class DbConnectionPoolManager {
     private static final ArrayList<Long> totalUsedConnectionsEverySecondBeforeReAdjustment = new ArrayList<>();
     private static int currentMaxDbConnectionPoolSize;
 
-    protected static void startManager() {
+    static void startManager() {
         if(managerTimer == null) {
             currentMaxDbConnectionPoolSize = getDatabaseMaxDbConnectionPool();
             try {
@@ -107,7 +108,7 @@ final class DbConnectionPoolManager {
         return connectionPool;
     }
 
-    protected static void setConnectionPool() throws SQLException {
+    static void setConnectionPool() throws SQLException {
         if(connectionPool.isEmpty() || connectionPool.size() < currentMaxDbConnectionPoolSize) {
             int maxConnectionsToOpen = currentMaxDbConnectionPoolSize - connectionPool.size();
             while(maxConnectionsToOpen > 0) {
@@ -125,7 +126,7 @@ final class DbConnectionPoolManager {
         }
     }
 
-    protected static PooledConnection getConnection() {
+    static PooledConnection getConnection() {
         PooledConnection pooledConnection = getConnectionPool().stream()
             .filter(pooledCon -> isDbConnected(pooledCon.getConnection()))
             .findFirst()
@@ -139,13 +140,6 @@ final class DbConnectionPoolManager {
         }
         connectionPoolInUseStatuses.put(pooledConnection.getUniqueReference(),true);
         return pooledConnection;
-    }
-
-    private static boolean isDbConnected(Connection con) {
-        try {
-            return con != null && !con.isClosed();
-        } catch (SQLException ignored) {}
-        return false;
     }
 
 }

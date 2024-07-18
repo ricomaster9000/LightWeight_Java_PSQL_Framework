@@ -6,6 +6,8 @@ import org.greatgamesonly.shared.opensource.sql.framework.lightweightsql.excepti
 
 import java.beans.IntrospectionException;
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -328,6 +330,13 @@ public final class DbUtils {
 
     public static java.sql.Timestamp nowDbTimestamp(String timezone) {
         return new java.sql.Timestamp(nowCal(timezone).getTimeInMillis());
+    }
+
+    public static boolean isDbConnected(Connection con) {
+        try {
+            return con != null && !con.isClosed();
+        } catch (SQLException ignored) {}
+        return false;
     }
 
 }
